@@ -1,0 +1,10 @@
+{
+  "appId": "it.respiro.diario",
+  "appName": "Respiro",
+  "webDir": "www",
+  "android": { "backgroundColor": "#EEF3F2" },
+  "plugins": {
+    "SystemBars": { "insetsHandling": "css", "initialViewportFitValueHint": "cover" },
+    "LocalNotifications": { "smallIcon": "ic_stat_respiro", "iconColor": "#23716C" }
+  }
+}

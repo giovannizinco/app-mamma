@@ -1,0 +1,54 @@
+name: Compila APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Installa le dipendenze
+        run: npm ci
+
+      - name: Copia l'app web nel progetto Android
+        run: npx cap sync android
+
+      - name: Compila l'APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Rinomina l'APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk Respiro.apk
+
+      - name: Pubblica l'APK nella pagina Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v1.0.${{ github.run_number }}" Respiro.apk \
+            --title "Respiro 1.0.${{ github.run_number }}" \
+            --notes "Scarica Respiro.apk dal telefono e aprilo per installarlo." \
+            --latest
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Respiro-apk
+          path: Respiro.apk

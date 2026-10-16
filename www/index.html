@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#23716C">
+<title>Respiro</title>
+<style>
+@font-face{font-family:"Atkinson Hyperlegible";font-weight:400;font-style:normal;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible";font-weight:400;font-style:italic;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-400-italic.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible";font-weight:700;font-style:normal;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Literata";font-weight:500;font-display:swap;src:url(fonts/literata-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Literata";font-weight:600;font-display:swap;src:url(fonts/literata-latin-600-normal.woff2) format("woff2")}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+/* Layout: app a una colonna, pensata per una mano sola — barra d'allarme in alto, navigazione grande in basso */
+:root{
+  --bg:#EEF3F2; --surface:#FFFFFF; --sunk:#E2EAE8; --ink:#17282B; --muted:#56696B; --line:#CBD8D6;
+  --accent:#23716C; --accent-ink:#FFFFFF; --accent-soft:#D3E8E5;
+  --warm:#B86A12; --warm-soft:#F6E6CF;
+  --alarm:#B3261E; --alarm-soft:#F9DEDA; --ok:#2E7D4F;
+  --f-display:"Literata", Georgia, "Times New Roman", serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1A1C; --surface:#172527; --sunk:#1F3033; --ink:#E4EEEC; --muted:#9DB2B0; --line:#2C4245;
+  --accent:#5FBDB3; --accent-ink:#0B1A1A; --accent-soft:#1D3D3B;
+  --warm:#E7A85A; --warm-soft:#3A2C18; --alarm:#FF8A7E; --alarm-soft:#3D1D1A; --ok:#7FCB9A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1A1C; --surface:#172527; --sunk:#1F3033; --ink:#E4EEEC; --muted:#9DB2B0; --line:#2C4245;
+  --accent:#5FBDB3; --accent-ink:#0B1A1A; --accent-soft:#1D3D3B;
+  --warm:#E7A85A; --warm-soft:#3A2C18; --alarm:#FF8A7E; --alarm-soft:#3D1D1A; --ok:#7FCB9A; color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:18px;padding-block:12px 24px}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:1.75rem} h2{font-size:1.3rem} h3{font-size:1.08rem}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:.9rem}
+.eyebrow{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* barra allarme */
+.sos{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;margin-top:8px;display:flex;align-items:center;gap:10px;
+  background:var(--alarm-soft);color:var(--alarm);border:1.5px solid var(--alarm);border-radius:var(--r);padding:10px 14px;
+  font-weight:700;cursor:pointer;width:100%;text-align:left;min-height:52px}
+.sos svg{flex:none}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px}
+.plain{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+
+.btn{min-height:52px;padding:0 18px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font-weight:700;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.soft{background:var(--accent-soft);border-color:transparent}
+.btn.ghost{background:transparent}
+.btn.sm{min-height:44px;padding:0 14px;font-size:.95rem}
+.btn:disabled{opacity:.5}
+
+/* checklist */
+.check{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:12px;background:var(--sunk);cursor:pointer;min-height:60px;border:1.5px solid transparent;width:100%;text-align:left}
+.check .box{width:30px;height:30px;border-radius:9px;border:2px solid var(--muted);flex:none;display:grid;place-items:center}
+.check.on{background:var(--accent-soft);border-color:var(--accent)}
+.check.on .box{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.check .lab{flex:1;min-width:0}
+.check .sub{display:block;font-size:.88rem;color:var(--muted)}
+
+.counter{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:var(--sunk);min-height:64px}
+.counter .lab{flex:1;min-width:0}
+.counter .n{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.3rem;min-width:3.2ch;text-align:center}
+.round{width:48px;height:48px;border-radius:50%;border:1.5px solid var(--line);background:var(--surface);font-size:1.5rem;font-weight:700;cursor:pointer;display:grid;place-items:center;flex:none}
+.round.plus{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.drops{display:flex;gap:5px;margin-top:4px}
+.drops i{width:14px;height:18px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:var(--line);display:block}
+.drops i.on{background:var(--accent)}
+
+.hero{display:flex;flex-direction:column;gap:6px}
+.chemo-chip{display:inline-flex;align-items:center;gap:8px;background:var(--warm-soft);color:var(--warm);border-radius:999px;padding:6px 14px;font-weight:700;font-size:.95rem;align-self:flex-start}
+
+/* form */
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:700}
+input[type=text],input[type=tel],input[type=date],input[type=time],input[type=number],textarea,select{
+  font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;min-height:50px;padding:10px 12px;width:100%}
+textarea{min-height:90px;resize:vertical}
+.scale{display:flex;flex-direction:column;gap:6px}
+.scale .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.scale output{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.15rem;min-width:2ch;text-align:right}
+input[type=range]{width:100%;height:40px;accent-color:var(--accent)}
+.ends{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted)}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{min-height:44px;padding:0 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700;font-size:.95rem}
+.pill.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.alert{border-radius:12px;padding:14px;background:var(--alarm-soft);color:var(--alarm);border:1.5px solid var(--alarm);display:flex;flex-direction:column;gap:6px;font-weight:700}
+.alert p{font-weight:400;color:var(--ink)}
+.note{border-radius:12px;padding:12px 14px;background:var(--warm-soft);color:var(--ink);font-size:.95rem}
+
+/* respirazione */
+.breath{display:grid;place-items:center;height:290px;position:relative}
+.orb{width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--accent-soft),var(--accent));transition:transform 4s ease-in-out;transform:scale(1)}
+.breath .ring{position:absolute;width:260px;height:260px;border-radius:50%;border:2px dashed var(--line)}
+.breath .cue{position:absolute;bottom:4px;font-family:var(--f-display);font-size:1.5rem;font-weight:600}
+.seg{display:flex;background:var(--sunk);border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;min-height:46px;border:0;border-radius:9px;background:transparent;font-weight:700;cursor:pointer;font-size:.95rem}
+.seg button.on{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.big-time{font-family:var(--f-display);font-size:2.6rem;font-variant-numeric:tabular-nums;text-align:center}
+
+/* liste */
+.list{display:flex;flex-direction:column;gap:8px}
+.li{display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:12px;background:var(--sunk)}
+.li .grow{overflow-wrap:anywhere}
+.x{width:44px;height:44px;border-radius:10px;border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:1.3rem;flex:none}
+.tel{font-variant-numeric:tabular-nums;font-weight:700;user-select:all}
+.date-badge{font-variant-numeric:tabular-nums;font-weight:700;background:var(--warm-soft);color:var(--warm);border-radius:8px;padding:4px 8px;font-size:.9rem;white-space:nowrap}
+
+/* storico */
+.hist{display:flex;flex-direction:column;gap:6px}
+.hrow{display:grid;grid-template-columns:5.2em 1fr auto;gap:10px;align-items:center;font-size:.92rem}
+.bars{display:flex;gap:3px;align-items:flex-end;height:26px}
+.bars span{width:10px;border-radius:3px 3px 0 0;background:var(--accent)}
+.spark{width:100%;height:90px;display:block}
+
+/* guide */
+details.g{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+details.g summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:56px;font-family:var(--f-display);font-weight:600;font-size:1.06rem}
+details.g summary::-webkit-details-marker{display:none}
+details.g summary::after{content:"+";font-family:var(--f-body);font-size:1.4rem;color:var(--muted)}
+details.g[open] summary::after{content:"–"}
+details.g .body{padding:0 18px 18px;display:flex;flex-direction:column;gap:10px}
+details.g ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.src{font-size:.85rem;color:var(--muted)}
+
+/* nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);
+  padding:6px max(8px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-right,0px))}
+nav.tabs .in{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+nav.tabs button{border:0;background:transparent;min-height:64px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer}
+nav.tabs button.on{color:var(--accent);background:var(--accent-soft)}
+nav.tabs svg{width:26px;height:26px}
+
+.sheet-bg{position:fixed;inset:0;background:rgba(10,20,22,.5);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);color:var(--ink);width:100%;max-width:620px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;
+  padding:20px max(18px,env(safe-area-inset-left,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;z-index:50;font-size:.95rem}
+.sync{font-size:.8rem;color:var(--muted)}
+@media (prefers-reduced-motion: reduce){.orb{transition:none}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap" id="app">
+  <button class="sos" id="sosBtn" type="button" aria-haspopup="dialog">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 10v4.5M12 17.5v.01"/></svg>
+    <span>Quando chiamare subito il medico</span>
+  </button>
+  <main id="view"></main>
+</div>
+
+<nav class="tabs" aria-label="Sezioni">
+  <div class="in">
+    <button data-tab="oggi" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Oggi</button>
+    <button data-tab="respira"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7"/></svg>Respiro</button>
+    <button data-tab="diario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>Diario</button>
+    <button data-tab="cure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Cure</button>
+    <button data-tab="guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/></svg>Guide</button>
+  </div>
+</nav>
+
+<script>
+(()=>{
+/* ---------- dati e salvataggio ---------- */
+const LS="respiro-v1";
+const DEF_PROFILO={nome:"",cicli:[],farmaci:[],contatti:[
+  {ruolo:"Centro oncologico / day hospital",nome:"",tel:""},
+  {ruolo:"Oncologo di riferimento",nome:"",tel:""},
+  {ruolo:"Medico di famiglia",nome:"",tel:""},
+  {ruolo:"Fisioterapista / ortopedico (spalla)",nome:"",tel:""}],
+  esSpalla:[],obAcqua:6,obPasti:5,obCammino:15,
+  prom:{farmaci:true,acqua:true,cure:true,respiro0:"10:30",respiro1:"17:30",cammino:"11:00",diario:"20:30"}};
+let S={profilo:structuredClone(DEF_PROFILO),giorni:{},domande:[]};
+let db=null, online=false;
+try{const raw=localStorage.getItem(LS); if(raw){const o=JSON.parse(raw); S={...S,...o,profilo:{...DEF_PROFILO,...(o.profilo||{}),prom:{...DEF_PROFILO.prom,...(o.profilo?.prom||{})}}}}}catch(e){}
+const saveLocal=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}};
+
+const pend={}, busy={};
+function queue(path,body){ // un salvataggio alla volta per documento, raggruppato
+  saveLocal(); if(!db) return;
+  pend[path]=body; clearTimeout(pend["_t"+path]);
+  pend["_t"+path]=setTimeout(()=>flush(path),600);
+}
+async function flush(path){
+  if(busy[path]||!(path in pend)) return;
+  const body=pend[path]; delete pend[path]; busy[path]=true;
+  try{await db.doc(path).set(JSON.parse(JSON.stringify(body)))}catch(e){toast("Non sono riuscito a salvare online: resta salvato su questo telefono")}
+  busy[path]=false; if(path in pend) flush(path);
+}
+const saveProfilo=()=>{queue("app/profilo",S.profilo);reschedule()};
+const saveDomande=()=>queue("app/domande",{items:S.domande});
+const saveGiorno=k=>queue("giorni/"+k,{data:k,...S.giorni[k]});
+
+/* ---------- utilità ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pad=n=>String(n).padStart(2,"0");
+const keyOf=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const today=()=>keyOf(new Date());
+const parseK=k=>{const[a,b,c]=k.split("-").map(Number);return new Date(a,b-1,c)};
+const GG=["dom","lun","mar","mer","gio","ven","sab"], MM=["gen","feb","mar","apr","mag","giu","lug","ago","set","ott","nov","dic"];
+const fmtK=k=>{const d=parseK(k);return GG[d.getDay()]+" "+d.getDate()+" "+MM[d.getMonth()]};
+const giorno=k=>(S.giorni[k] ||= {checks:{},acqua:0,pasti:0,cammino:0,respiro:0,sint:{},flag:[],temp:"",peso:"",note:""});
+const uid=()=>Math.random().toString(36).slice(2,9);
+function toast(t){const el=document.createElement("div");el.className="toast";el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),2400)}
+async function copy(t){try{await navigator.clipboard.writeText(t);toast("Copiato")}catch(e){toast("Tieni premuto sul testo per copiarlo")}}
+
+/* ---------- notifiche native ---------- */
+const LN=()=>window.Capacitor?.Plugins?.LocalNotifications;
+const isNative=()=>!!window.Capacitor?.isNativePlatform?.();
+let permOk=null, rsT=null;
+async function ensurePerm(ask){
+  const ln=LN(); if(!ln) return false;
+  try{let p=await ln.checkPermissions(); if(p.display!=="granted"&&ask) p=await ln.requestPermissions(); permOk=p.display==="granted"; return permOk}catch(e){return false}
+}
+function reschedule(){clearTimeout(rsT);rsT=setTimeout(doSchedule,800)}
+async function doSchedule(){
+  const ln=LN(); if(!ln||!(await ensurePerm(false))) return;
+  try{await ln.createChannel({id:"promemoria",name:"Promemoria",description:"Farmaci, acqua, respiro, diario e cure",importance:4,visibility:1,vibration:true})}catch(e){}
+  try{const p=await ln.getPending(); if(p.notifications.length) await ln.cancel({notifications:p.notifications.map(n=>({id:n.id}))})}catch(e){}
+  const P=S.profilo.prom, list=[]; let id=1;
+  const base={channelId:"promemoria",smallIcon:"ic_stat_respiro",iconColor:"#23716C"};
+  const daily=(t,title,body)=>{if(!t)return;const[h,m]=t.split(":").map(Number);if(isNaN(h)||isNaN(m))return;
+    list.push({...base,id:id++,title,body,schedule:{on:{hour:h,minute:m},allowWhileIdle:true},extra:{tab:title.startsWith("Come stai")?"diario":"oggi"}})};
+  if(P.farmaci) S.profilo.farmaci.forEach(f=>(f.orari||[]).forEach(o=>daily(o,"Farmaco: "+f.nome,f.nota||"Segnalo come preso nella schermata Oggi.")));
+  if(P.acqua) ["10:00","12:00","15:00","17:00","19:00"].forEach(t=>daily(t,"Un bicchiere d'acqua","A piccoli sorsi. Segnalo nella schermata Oggi."));
+  daily(P.respiro0,"Esercizio di respiro","3 minuti da seduta, con il braccio appoggiato.");
+  daily(P.respiro1,"Esercizio di respiro","3 minuti da seduta, con il braccio appoggiato.");
+  daily(P.cammino,"Una breve camminata","Anche 5 minuti vanno bene.");
+  daily(P.diario,"Come stai oggi?","Un minuto per compilare il diario.");
+  if(P.cure){const now=new Date();S.profilo.cicli.forEach(c=>{const d=parseK(c.data);
+    const prima=new Date(d);prima.setDate(d.getDate()-1);prima.setHours(18,0,0,0);
+    const matt=new Date(d);matt.setHours(7,30,0,0);
+    if(prima>now) list.push({...base,id:id++,title:"Domani: "+c.tipo,body:fmtK(c.data)+(c.nota?" · "+c.nota:" · Prepara documenti e referti."),schedule:{at:prima,allowWhileIdle:true},extra:{tab:"cure"}});
+    if(matt>now) list.push({...base,id:id++,title:"Oggi: "+c.tipo,body:c.nota||"Porta documenti e referti.",schedule:{at:matt,allowWhileIdle:true},extra:{tab:"cure"}});
+  })}
+  if(list.length){try{await ln.schedule({notifications:list.slice(0,200)})}catch(e){toast("Non sono riuscito a programmare i promemoria")}}
+}
+async function provaNotifica(){
+  const ln=LN(); if(!ln){toast("Le notifiche funzionano nell'app installata");return}
+  if(!(await ensurePerm(true))){toast("Notifiche non permesse: attivale nelle impostazioni del telefono");render();return}
+  try{await ln.schedule({notifications:[{id:9999,title:"Respiro",body:"Le notifiche funzionano.",channelId:"promemoria",smallIcon:"ic_stat_respiro",iconColor:"#23716C",schedule:{at:new Date(Date.now()+5000),allowWhileIdle:true}}]});toast("Arriva tra 5 secondi")}catch(e){toast("Prova non riuscita")}
+}
+function promHTML(){
+  const P=S.profilo.prom;
+  const tog=(k,l,s)=>`<button class="check${P[k]?" on":""}" data-promchk="${k}" aria-pressed="${!!P[k]}"><span class="box">${P[k]?"✓":""}</span><span class="lab"><b>${l}</b><span class="sub">${s}</span></span></button>`;
+  const tm=(k,l)=>`<label class="f grow">${l}<input type="time" data-promt="${k}" value="${esc(P[k]||"")}"></label>`;
+  return `<section class="card"><h2>Promemoria sul telefono</h2>
+    ${!isNative()?`<p class="note">Le notifiche funzionano nell'app installata sul telefono.</p>`:permOk===false?`<div class="alert">Le notifiche sono spente.<p>Tocca il pulsante qui sotto. Se non compare la richiesta, attivale in Impostazioni del telefono → App → Respiro → Notifiche.</p></div>`:""}
+    ${tog("farmaci","Farmaci","agli orari inseriti qui sopra")}
+    ${tog("acqua","Acqua","5 volte al giorno, dalle 10 alle 19")}
+    ${tog("cure","Chemio, esami e visite","il giorno prima alle 18 e la mattina alle 7:30")}
+    <div class="row">${tm("respiro0","Respiro 1")}${tm("respiro1","Respiro 2")}</div>
+    <div class="row">${tm("cammino","Camminata")}${tm("diario","Diario serale")}</div>
+    <p class="small muted">Lascia vuoto un orario per non ricevere quel promemoria.</p>
+    <button class="btn soft" id="provaN">${permOk===false?"Attiva le notifiche":"Prova una notifica"}</button></section>`;
+}
+
+/* ---------- navigazione ---------- */
+let tab="oggi";
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;stopBreath();render();window.scrollTo({top:0})});
+const ALLARMI=[
+ ["Febbre a 38 °C o più, oppure brividi","Durante la chemio le difese possono essere basse: chiama subito il centro, anche di notte o nel fine settimana."],
+ ["Fiato corto nuovo o che peggiora all'improvviso",""],
+ ["Dolore al petto o battito del cuore molto accelerato",""],
+ ["Sangue nella tosse o nell'espettorato",""],
+ ["Vomito o diarrea che non ti lasciano bere o durano più di un giorno",""],
+ ["Lividi o sanguinamenti insoliti (gengive, naso, urine)",""],
+ ["Dolore nuovo o forte, confusione, gonfiore di viso, collo o braccio",""],
+ ["Qualsiasi sintomo nuovo che ti preoccupa","Lo specialista preferisce essere avvisato: potrà intervenire o rassicurarti."]];
+$("#sosBtn").onclick=()=>openSheet(`
+  <h2>Chiama subito se…</h2>
+  <div class="list">${ALLARMI.map(([t,s])=>`<div class="li" style="align-items:flex-start"><div class="grow"><b>${t}</b>${s?`<p class="small muted">${s}</p>`:""}</div></div>`).join("")}</div>
+  <div class="alert">Emergenza grave (non respiri, svenimento, dolore al petto forte): <span class="tel" style="font-size:1.4rem">112</span></div>
+  <h3>I tuoi numeri</h3>
+  <div class="list">${contattiHTML(true)}</div>
+  <button class="btn" data-close>Chiudi</button>`);
+
+function openSheet(html){
+  const bg=document.createElement("div");bg.className="sheet-bg";bg.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  bg.onclick=e=>{if(e.target===bg||e.target.closest("[data-close]"))bg.remove();
+    const c=e.target.closest("[data-copy]");if(c)copy(c.dataset.copy)};
+  document.body.appendChild(bg);bg.querySelector("button")?.focus();return bg;
+}
+function contattiHTML(onlyFilled){
+  const cs=S.profilo.contatti.filter(c=>!onlyFilled||c.tel);
+  if(!cs.length) return `<p class="muted">Nessun numero inserito. Aggiungili in <b>Cure → Contatti</b>.</p>`;
+  return cs.map(c=>`<div class="li"><div class="grow"><span class="small muted">${esc(c.ruolo)}</span><br><b>${esc(c.nome)}</b> <span class="tel">${esc(c.tel)}</span></div>${c.tel?`<button class="btn sm soft" data-copy="${esc(c.tel)}">Copia</button>`:""}</div>`).join("");
+}
+
+/* ---------- OGGI ---------- */
+function prossimoCiclo(){
+  const t=today();const fut=S.profilo.cicli.filter(c=>c.data>=t).sort((a,b)=>a.data<b.data?-1:1);return fut[0];
+}
+function giorniA(k){return Math.round((parseK(k)-parseK(today()))/864e5)}
+function renderOggi(){
+  const k=today(), g=giorno(k), p=S.profilo, h=new Date().getHours();
+  const saluto=h<12?"Buongiorno":h<18?"Buon pomeriggio":"Buonasera";
+  const nc=prossimoCiclo();
+  const chip=nc?`<span class="chemo-chip">${giorniA(nc.data)===0?"Chemio oggi":giorniA(nc.data)===1?"Chemio domani":"Prossima chemio tra "+giorniA(nc.data)+" giorni"} · ${fmtK(nc.data)}</span>`:"";
+  const farm=p.farmaci.flatMap(f=>(f.orari||[""]).map(o=>({id:f.id+"@"+o,nome:f.nome,ora:o,nota:f.nota}))).sort((a,b)=>(a.ora||"99")<(b.ora||"99")?-1:1);
+  const fatto=[...farm.map(f=>g.checks[f.id]),g.acqua>=p.obAcqua,g.pasti>=p.obPasti,g.respiro>=2,g.cammino>=p.obCammino,g.checks.bocca_m&&g.checks.bocca_s,!!g.sint.compilato].filter(Boolean).length;
+  const tot=farm.length+6;
+  const tempAlarm=Number(String(g.temp).replace(",","."))>=38;
+  return `
+  <section class="hero">
+    <span class="eyebrow">${fmtK(k)}</span>
+    <h1>${saluto}${p.nome?", "+esc(p.nome):""}</h1>
+    ${chip}
+    <p class="muted">${fatto} di ${tot} cose fatte oggi. Anche poco va bene.</p>
+  </section>
+  ${tempAlarm?`<div class="alert">Hai segnato ${esc(g.temp)} °C di febbre. Chiama subito il centro oncologico.<p>${contattiHTML(true).includes("tel")?"I numeri sono nel pulsante rosso in alto.":"Aggiungi il numero del centro in Cure → Contatti."}</p></div>`:""}
+
+  <section class="card">
+    <div class="row between"><h2>Farmaci</h2><button class="btn sm ghost" data-go="cure">Modifica</button></div>
+    ${farm.length?farm.map(f=>checkHTML(f.id,f.nome,(f.ora?f.ora+" · ":"")+(f.nota||""),g.checks[f.id])).join(""):
+      `<p class="muted">Inserisci i farmaci con orari e dosi esattamente come scritti dal medico, in <b>Cure → Farmaci</b>. Qui compariranno da spuntare.</p>`}
+  </section>
+
+  <section class="card">
+    <h2>Corpo</h2>
+    ${counterHTML("acqua","Acqua","bicchieri da 250 ml, obiettivo "+p.obAcqua+" (circa 1,5 litri)",g.acqua,p.obAcqua,true)}
+    ${counterHTML("pasti","Pasti e spuntini","piccoli e frequenti, obiettivo "+p.obPasti,g.pasti,p.obPasti)}
+    ${counterHTML("respiro","Esercizi di respiro","obiettivo 2 sessioni",g.respiro,2)}
+    ${counterHTML("cammino","Camminata","minuti, obiettivo "+p.obCammino,g.cammino,p.obCammino,false,5)}
+    ${checkHTML("bocca_m","Igiene della bocca, mattina","spazzolino morbido e sciacquo",g.checks.bocca_m)}
+    ${checkHTML("bocca_s","Igiene della bocca, sera","spazzolino morbido e sciacquo",g.checks.bocca_s)}
+  </section>
+
+  <section class="card">
+    <div class="row between"><h2>Come stai oggi?</h2>${g.sint.compilato?`<span class="small" style="color:var(--ok);font-weight:700">Compilato</span>`:""}</div>
+    <p class="muted">Un minuto per segnare stanchezza, nausea, dolore e temperatura. Ti aiuta a raccontarlo bene alla visita.</p>
+    <button class="btn primary" data-go="diario">${g.sint.compilato?"Rivedi il diario di oggi":"Compila il diario"}</button>
+  </section>
+
+  <section class="note"><b>Spalla rotta:</b> niente pesi e niente appoggio sul braccio. Gli esercizi per la spalla solo quelli dati dal fisioterapista o dall'ortopedico (li trovi in <b>Respiro → Movimento</b>).</section>
+  `;
+}
+function checkHTML(id,lab,sub,on){return `<button class="check${on?" on":""}" data-check="${esc(id)}" aria-pressed="${!!on}"><span class="box">${on?"✓":""}</span><span class="lab"><b>${esc(lab)}</b>${sub?`<span class="sub">${esc(sub)}</span>`:""}</span></button>`}
+function counterHTML(f,lab,sub,n,ob,drops,step){
+  return `<div class="counter"><div class="lab"><b>${lab}</b><span class="small muted" style="display:block">${sub}</span>
+   ${drops?`<div class="drops">${Array.from({length:ob},(_,i)=>`<i class="${i<n?"on":""}"></i>`).join("")}</div>`:""}</div>
+   <button class="round" data-cnt="${f}" data-d="-${step||1}" aria-label="Togli">−</button><span class="n" aria-live="polite">${n}</span>
+   <button class="round plus" data-cnt="${f}" data-d="${step||1}" aria-label="Aggiungi">+</button></div>`;
+}
+
+/* ---------- RESPIRO e MOVIMENTO ---------- */
+const MODI={
+  diaf:{nome:"Diaframmatica",fasi:[["Inspira dal naso",4,1.9],["Espira lenta",6,1]],
+    come:["Seduta comoda, schiena appoggiata, braccio della spalla rotta sostenuto da un cuscino.","Mano sana sulla pancia: inspirando dal naso la pancia si gonfia, il petto resta fermo.","Espira piano dalla bocca, più a lungo di quanto hai inspirato."]},
+  labbra:{nome:"Labbra socchiuse",fasi:[["Inspira dal naso",2,1.7],["Soffia piano",4,1]],
+    come:["Utile quando manca il fiato, anche dopo uno sforzo.","Inspira dal naso contando fino a 2.","Espira a labbra socchiuse, come per spegnere piano una candela, contando fino a 4."]},
+  calma:{nome:"Rilassamento",fasi:[["Inspira",4,1.9],["Trattieni dolce",2,1.9],["Espira",6,1]],
+    come:["Per l'ansia, prima di una visita o per addormentarti.","Non forzare la pausa: se ti dà fastidio, saltala."]}};
+let modo="diaf", durata=3, bTimer=null, bEnd=0, sub="respiro", walk={on:false,start:0,acc:0,t:null};
+function renderRespira(){
+  return `
+  <section class="hero"><span class="eyebrow">Respiro e movimento</span><h1>${sub==="respiro"?"Respira con calma":"Muoversi un po'"}</h1></section>
+  <div class="seg" role="tablist"><button class="${sub==="respiro"?"on":""}" data-sub="respiro">Respirazione</button><button class="${sub==="movimento"?"on":""}" data-sub="movimento">Movimento</button></div>
+  ${sub==="respiro"?respiroHTML():movimentoHTML()}`;
+}
+function respiroHTML(){
+  const m=MODI[modo];
+  return `
+  <div class="seg">${Object.entries(MODI).map(([k,v])=>`<button class="${k===modo?"on":""}" data-modo="${k}">${v.nome}</button>`).join("")}</div>
+  <section class="card">
+    <div class="breath"><div class="ring"></div><div class="orb" id="orb"></div><div class="cue" id="cue">${bTimer?"":"Pronta?"}</div></div>
+    <div class="big-time" id="bclock">${durata}:00</div>
+    <div class="seg">${[2,3,5].map(d=>`<button class="${d===durata?"on":""}" data-dur="${d}">${d} min</button>`).join("")}</div>
+    <button class="btn primary" id="bgo">${bTimer?"Ferma":"Inizia"}</button>
+  </section>
+  <section class="card"><h3>Come si fa</h3><ul style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">${m.come.map(c=>`<li>${c}</li>`).join("")}</ul>
+  <p class="small muted">Se ti gira la testa fermati e respira normalmente. Chiedi in ospedale se è possibile fare riabilitazione respiratoria.</p></section>`;
+}
+function movimentoHTML(){
+  const g=giorno(today()), p=S.profilo;
+  const sec=walk.on?Math.floor((Date.now()-walk.start)/1000)+walk.acc:walk.acc;
+  return `
+  <section class="card">
+    <h2>Camminata</h2>
+    <p class="muted">Poco e spesso aiuta contro la stanchezza più del riposo assoluto: meglio 5 minuti tre volte che niente. Oggi: <b>${g.cammino} di ${p.obCammino} minuti</b>.</p>
+    <div class="big-time" id="wclock">${pad(Math.floor(sec/60))}:${pad(sec%60)}</div>
+    <div class="row"><button class="btn primary grow" id="wgo">${walk.on?"Pausa":sec?"Riprendi":"Inizia a camminare"}</button>${sec?`<button class="btn grow" id="wsave">Salva ${Math.max(1,Math.round(sec/60))} min</button>`:""}</div>
+    <p class="small muted">Scarpe chiuse, percorso senza ostacoli, il braccio della spalla nel tutore se te lo hanno dato. Ti puoi fermare quando vuoi.</p>
+  </section>
+  <section class="card">
+    <h2>Esercizi per la spalla</h2>
+    <p class="muted">Solo quelli prescritti da fisioterapista o ortopedico, con le loro ripetizioni.</p>
+    <div class="list">${p.esSpalla.length?p.esSpalla.map(e=>`
+      <div class="li">${checkMini("sp_"+e.id,g.checks["sp_"+e.id])}<div class="grow"><b>${esc(e.nome)}</b>${e.dettagli?`<br><span class="small muted">${esc(e.dettagli)}</span>`:""}</div><button class="x" data-delsp="${e.id}" aria-label="Elimina">×</button></div>`).join(""):`<p class="muted">Ancora nessun esercizio.</p>`}</div>
+    <form id="spForm" class="plain"><label class="f">Esercizio<input type="text" id="spNome" placeholder="es. pendolo del braccio" required></label>
+    <label class="f">Ripetizioni e indicazioni<input type="text" id="spDet" placeholder="come scritto dal fisioterapista"></label>
+    <button class="btn soft" type="submit">Aggiungi esercizio</button></form>
+  </section>`;
+}
+function checkMini(id,on){return `<button class="round${on?" plus":""}" data-check="${id}" aria-pressed="${!!on}" aria-label="Fatto">${on?"✓":""}</button>`}
+
+function startBreath(){
+  const m=MODI[modo];bEnd=Date.now()+durata*60000;let i=0;
+  const orb=$("#orb"),cue=$("#cue");
+  const step=()=>{
+    if(Date.now()>=bEnd){finishBreath();return}
+    const [t,sec,sc]=m.fasi[i%m.fasi.length];i++;
+    if(cue)cue.textContent=t; if(orb){orb.style.transitionDuration=sec+"s";orb.style.transform=`scale(${sc})`}
+    bTimer=setTimeout(step,sec*1000);
+  };
+  const clock=setInterval(()=>{const r=Math.max(0,bEnd-Date.now());const el=$("#bclock");if(el)el.textContent=Math.floor(r/60000)+":"+pad(Math.floor(r/1000)%60);if(!bTimer)clearInterval(clock)},250);
+  step(); $("#bgo").textContent="Ferma";
+}
+function stopBreath(){clearTimeout(bTimer);bTimer=null}
+function finishBreath(){stopBreath();const k=today();giorno(k).respiro++;saveGiorno(k);toast("Fatto. Sessione segnata in Oggi");render()}
+
+/* ---------- DIARIO ---------- */
+const SINT=[["stanch","Stanchezza","nessuna","fortissima"],["nausea","Nausea","nessuna","fortissima"],["dolore","Dolore","nessuno","fortissimo"],
+  ["fiato","Fiato corto","per niente","moltissimo"],["appet","Mancanza di appetito","mangio bene","non mangio"],["ansia","Ansia o tristezza","sto bene","moltissima"],["sonno","Sonno disturbato","dormo bene","non dormo"]];
+const FLAGS=["Vomito","Diarrea","Stitichezza","Bocca dolorante","Formicolii mani/piedi","Tosse","Gusto alterato","Pelle secca"];
+function renderDiario(){
+  const k=today(),g=giorno(k);
+  return `
+  <section class="hero"><span class="eyebrow">Diario · ${fmtK(k)}</span><h1>Come stai oggi?</h1><p class="muted">0 vuol dire per niente, 10 il massimo. Non serve essere precisi.</p></section>
+  <section class="card">
+    ${SINT.map(([id,l,a,b])=>`<div class="scale"><div class="top"><label for="s_${id}"><b>${l}</b></label><output id="o_${id}">${g.sint[id]??"–"}</output></div>
+      <input type="range" min="0" max="10" step="1" id="s_${id}" data-sint="${id}" value="${g.sint[id]??0}"><div class="ends"><span>${a}</span><span>${b}</span></div></div>`).join("")}
+  </section>
+  <section class="card"><h3>Oggi hai avuto…</h3>
+    <div class="pills">${FLAGS.map(f=>`<button class="pill${g.flag.includes(f)?" on":""}" data-flag="${f}" aria-pressed="${g.flag.includes(f)}">${f}</button>`).join("")}</div></section>
+  <section class="card">
+    <div class="row"><label class="f grow">Temperatura (°C)<input type="number" inputmode="decimal" step="0.1" min="34" max="43" id="dTemp" value="${esc(g.temp)}" placeholder="36,5"></label>
+    <label class="f grow">Peso (kg)<input type="number" inputmode="decimal" step="0.1" id="dPeso" value="${esc(g.peso)}" placeholder="una volta a settimana"></label></div>
+    <div id="tempWarn"></div>
+    <label class="f">Note per il medico<textarea id="dNote" placeholder="es. stanca dopo pranzo, nausea il secondo giorno dopo la chemio">${esc(g.note)}</textarea></label>
+    <button class="btn primary" id="dSave">Salva il diario di oggi</button>
+  </section>
+  ${storicoHTML()}
+  <section class="card"><h3>Riepilogo per la visita</h3><p class="muted">Gli ultimi 14 giorni in un testo da copiare o leggere all'oncologo.</p><button class="btn soft" id="riep">Prepara il riepilogo</button></section>`;
+}
+function ultimi(n){const out=[];const d=new Date();for(let i=n-1;i>=0;i--){const x=new Date(d);x.setDate(d.getDate()-i);out.push(keyOf(x))}return out}
+function storicoHTML(){
+  const ks=ultimi(14), vals=ks.map(k=>S.giorni[k]?.sint?.compilato?S.giorni[k].sint.stanch:null);
+  if(!vals.some(v=>v!=null)) return `<section class="card"><h3>Andamento</h3><p class="muted">Dopo qualche giorno di diario qui vedrai come cambia la stanchezza.</p></section>`;
+  const W=320,H=90,px=i=>8+i*(W-16)/13,py=v=>H-12-v*(H-24)/10;
+  let path="",dots="";vals.forEach((v,i)=>{if(v==null)return;path+=(path?"L":"M")+px(i).toFixed(1)+" "+py(v).toFixed(1);dots+=`<circle cx="${px(i)}" cy="${py(v)}" r="3.5" fill="var(--accent)"/>`});
+  const cicli=ks.map((k,i)=>S.profilo.cicli.some(c=>c.data===k)?`<rect x="${px(i)-6}" y="2" width="12" height="${H-4}" rx="3" fill="var(--warm-soft)"/>`:"").join("");
+  return `<section class="card"><div class="row between"><h3>Stanchezza, ultimi 14 giorni</h3><span class="small muted">0–10</span></div>
+   <svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Andamento della stanchezza">${cicli}
+   <line x1="8" x2="${W-8}" y1="${py(5)}" y2="${py(5)}" stroke="var(--line)" stroke-dasharray="3 4"/>
+   <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>${dots}</svg>
+   <div class="ends"><span>${fmtK(ks[0])}</span><span>oggi</span></div>
+   ${S.profilo.cicli.length?`<p class="small muted">Le fasce arancioni sono i giorni di chemio.</p>`:""}</section>`;
+}
+function riepilogo(){
+  const ks=ultimi(14).filter(k=>S.giorni[k]?.sint?.compilato||S.giorni[k]?.note||S.giorni[k]?.temp);
+  if(!ks.length) return "Nessun giorno compilato negli ultimi 14 giorni.";
+  return "Diario sintomi (0 = per niente, 10 = massimo)\n\n"+ks.map(k=>{const g=S.giorni[k];
+    const s=SINT.filter(([id])=>g.sint[id]!=null).map(([id,l])=>l.toLowerCase()+" "+g.sint[id]).join(", ");
+    return "• "+fmtK(k)+(S.profilo.cicli.some(c=>c.data===k)?" (chemio)":"")+": "+[s,g.flag.length?"anche: "+g.flag.join(", ").toLowerCase():"",g.temp?"temperatura "+g.temp+" °C":"",g.peso?"peso "+g.peso+" kg":"",g.note?"note: "+g.note:""].filter(Boolean).join("; ");
+  }).join("\n")+(S.domande.filter(d=>!d.fatta).length?"\n\nDomande per l'oncologo:\n"+S.domande.filter(d=>!d.fatta).map(d=>"• "+d.testo).join("\n"):"");
+}
+
+/* ---------- CURE ---------- */
+function renderCure(){
+  const p=S.profilo,t=today();
+  const cicli=[...p.cicli].sort((a,b)=>a.data<b.data?-1:1);
+  return `
+  <section class="hero"><span class="eyebrow">Cure e organizzazione</span><h1>Il piano di cura</h1></section>
+  <section class="card"><h2>Calendario chemio ed esami</h2>
+    <div class="list">${cicli.length?cicli.map(c=>`<div class="li" style="${c.data<t?"opacity:.55":""}"><span class="date-badge">${fmtK(c.data)}</span><div class="grow">${esc(c.tipo)}${c.nota?`<br><span class="small muted">${esc(c.nota)}</span>`:""}</div><button class="x" data-delc="${c.id}" aria-label="Elimina">×</button></div>`).join(""):`<p class="muted">Aggiungi le date dei cicli e degli esami del sangue che si fanno prima di ogni ciclo.</p>`}</div>
+    <form id="cForm" class="plain"><div class="row"><label class="f grow">Data<input type="date" id="cData" required></label>
+      <label class="f grow">Cosa<select id="cTipo"><option>Chemioterapia</option><option>Esami del sangue</option><option>Visita oncologica</option><option>TAC / esami</option><option>Fisioterapia</option><option>Altro</option></select></label></div>
+      <label class="f">Nota<input type="text" id="cNota" placeholder="es. 2° ciclo, a digiuno, portare referti"></label>
+      <button class="btn soft" type="submit">Aggiungi data</button></form></section>
+
+  <section class="card"><h2>Farmaci</h2><p class="small muted">Copia nome, dose e orari esattamente dalla prescrizione. Per dubbi chiedi al medico o al farmacista.</p>
+    <div class="list">${p.farmaci.length?p.farmaci.map(f=>`<div class="li"><div class="grow"><b>${esc(f.nome)}</b><br><span class="small muted">${esc((f.orari||[]).filter(Boolean).join(" · ")||"senza orario")}${f.nota?" — "+esc(f.nota):""}</span></div><button class="x" data-delf="${f.id}" aria-label="Elimina">×</button></div>`).join(""):`<p class="muted">Nessun farmaco inserito.</p>`}</div>
+    <form id="fForm" class="plain"><label class="f">Nome e dose<input type="text" id="fNome" placeholder="come sulla ricetta" required></label>
+      <div class="row"><label class="f grow">Orario 1<input type="time" id="fO1"></label><label class="f grow">Orario 2<input type="time" id="fO2"></label><label class="f grow">Orario 3<input type="time" id="fO3"></label></div>
+      <label class="f">Nota<input type="text" id="fNota" placeholder="es. a stomaco pieno, solo nei giorni dopo la chemio"></label>
+      <button class="btn soft" type="submit">Aggiungi farmaco</button></form></section>
+
+  <section class="card"><h2>Domande per l'oncologo</h2><p class="small muted">Annotale quando ti vengono in mente. Alla visita porta qualcuno con te: aiuta a ricordare le risposte.</p>
+    <div class="list">${S.domande.length?S.domande.map(d=>`<div class="li">${`<button class="round${d.fatta?" plus":""}" data-dom="${d.id}" aria-label="Fatta">${d.fatta?"✓":""}</button>`}<div class="grow" style="${d.fatta?"text-decoration:line-through;color:var(--muted)":""}">${esc(d.testo)}</div><button class="x" data-deld="${d.id}" aria-label="Elimina">×</button></div>`).join(""):""}</div>
+    <form id="dForm" class="row"><input type="text" id="dTesto" class="grow" placeholder="Scrivi una domanda" required style="flex:1;min-width:0"><button class="btn soft" type="submit">Aggiungi</button></form>
+    <details class="g" style="border:0;background:var(--sunk)"><summary>Idee di domande da fare</summary><div class="body"><ul>
+      <li>Che tipo di tumore è esattamente e in che stadio?</li><li>Sono state cercate mutazioni (EGFR, ALK e altre)? Cambiano la cura?</li>
+      <li>Qual è l'obiettivo di questa chemio e quanti cicli sono previsti?</li><li>Quali effetti collaterali devo aspettarmi e quando?</li>
+      <li>Con la spalla rotta ci sono attenzioni particolari (accesso venoso, farmaci per il dolore)?</li><li>Chi chiamo di notte o nel fine settimana se ho la febbre?</li>
+      <li>Posso vedere uno psico-oncologo e un nutrizionista?</li><li>Quali vaccini mi consigliate?</li></ul>
+      <button class="btn sm soft" id="addIdee" type="button">Aggiungile tutte alla lista</button></div></details></section>
+
+  <section class="card"><h2>Contatti</h2>
+    ${p.contatti.map((c,i)=>`<div class="plain" style="gap:6px"><b class="small">${esc(c.ruolo)}</b><div class="row"><input type="text" data-cn="${i}" value="${esc(c.nome)}" placeholder="Nome" style="flex:1;min-width:0"><input type="tel" data-ct="${i}" value="${esc(c.tel)}" placeholder="Telefono" style="flex:1;min-width:0"></div></div>`).join("")}
+    <p class="small muted">Questi numeri compaiono nel pulsante rosso in alto.</p></section>
+
+  ${promHTML()}
+
+  <section class="card"><h2>Impostazioni</h2>
+    <label class="f">Nome per il saluto<input type="text" id="pNome" value="${esc(p.nome)}" placeholder="facoltativo"></label>
+    <div class="row"><label class="f grow">Bicchieri d'acqua<input type="number" id="pAcqua" min="1" max="15" value="${p.obAcqua}"></label>
+    <label class="f grow">Pasti e spuntini<input type="number" id="pPasti" min="1" max="10" value="${p.obPasti}"></label>
+    <label class="f grow">Minuti di cammino<input type="number" id="pCam" min="0" max="120" value="${p.obCammino}"></label></div>
+    <p class="small muted">Se l'oncologo o il nutrizionista ti danno obiettivi diversi, usa i loro.</p>
+    <p class="sync">${online?"Salvato online: chi ha accesso a questa pagina vede gli stessi dati.":"Salvato su questo dispositivo."}</p></section>`;
+}
+
+/* ---------- GUIDE ---------- */
+const AIMAC="https://www.aimac.it";
+const GUIDE=[
+ ["Nausea e vomito",["Pasti piccoli più volte al giorno, masticando bene.","Evita cibi fritti, grassi o con odore forte.","Qualcosa di secco (fette biscottate, cracker) appena sveglia, prima di alzarti.","Bevi spesso, a piccoli sorsi.","Se non riesci a bere o vomiti molto, chiama il centro: esistono farmaci per prevenirla."],AIMAC+"/cura-tumore/chemioterapia"],
+ ["Diarrea",["Bevi molto, fino a circa 2 litri al giorno.","Meno fibre: niente verdura e frutta crude, preferisci la frutta cotta.","Evita alcol e caffè, limita il latte.","Chiedi al medico se puoi prendere fermenti lattici.","Se dura più di un giorno o c'è febbre, chiama il centro."],AIMAC+"/cura-tumore/chemioterapia"],
+ ["Bocca e gengive",["Spazzolino a setole morbide (anche da bambini), mattina, sera e dopo i pasti.","Sciacqui regolari.","Almeno 1,5 litri di liquidi al giorno.","Se compaiono afte o dolore che impedisce di mangiare, dillo al medico."],AIMAC+"/cura-tumore/chemioterapia"],
+ ["Stanchezza (fatigue)",["È il disturbo più comune durante la chemio e può durare anche dopo.","Organizza la giornata alternando attività e pause; le faccende distribuite nella settimana.","Un po' di movimento ogni giorno, senza esagerare.","Orari regolari per sonno e risveglio.","Tieni il diario: aiuta il medico a capire. Spesso c'è anemia, che si può correggere."],AIMAC+"/vivere-con-il-tumore/tumore-stanchezza-fatigue"],
+ ["Alimentazione e peso",["L'obiettivo è non perdere peso e soprattutto massa muscolare: aiuta a tollerare meglio le cure.","Pesati una volta a settimana e segnalo nel diario.","Hai diritto a una valutazione nutrizionale: chiedila all'oncologo.","Diffida delle diete \"anti-cancro\" povere di calorie o proteine: AIOM e SINPE le sconsigliano perché possono peggiorare la malnutrizione.","Se mangi poco esistono integratori prescritti dallo specialista."],AIMAC+"/vivere-con-il-tumore/tumori-dieta-nutrizione"],
+ ["Difese basse e infezioni",["La chemio può abbassare globuli bianchi, rossi e piastrine.","Febbre a 38 °C o più: chiama subito.","Lavati spesso le mani, evita persone con influenza o raffreddore.","Attenzione a non ferirti; rasoio elettrico invece delle lamette.","Chiedi all'oncologo quali vaccini fare e quando."],AIMAC+"/cura-tumore/chemioterapia"],
+ ["Capelli e pelle",["Non sempre i capelli cadono: dipende dai farmaci. Ricrescono a fine cicli.","Se cadranno, tagliarli corti prima aiuta.","Shampoo delicato, niente phon caldo o piastra.","Al sole: cappello, abiti coprenti e crema ad alta protezione.","La parrucca è in parte detraibile e in alcune regioni rimborsata."],AIMAC+"/vivere-con-il-tumore/trattamento-tumore-caduta-capelli"],
+ ["Formicolii, udito, concentrazione",["Alcuni farmaci danno formicolio a mani e piedi: segnalalo subito, la dose si può adattare.","Anche ronzii alle orecchie o calo dell'udito vanno riferiti.","Difficoltà di concentrazione e ansia sono frequenti e passano."],AIMAC+"/cura-tumore/chemioterapia"],
+ ["Emozioni e sostegno",["Ansia e tristezza dopo la diagnosi sono normali e si curano.","Chiedi in ospedale lo psico-oncologo: è un servizio gratuito.","AIMaC e WALCE offrono ascolto e supporto psicologico anche ai familiari.","Il tumore al polmone non è una colpa: circa 15 pazienti su 100 non hanno mai fumato."],AIMAC+"/parlare-tumori"],
+ ["Fumo",["Smettere anche dopo la diagnosi aiuta la risposta alle cure e riduce le complicanze.","I Centri Antifumo del servizio sanitario danno supporto gratuito."],""],
+];
+const DIRITTI=[["Esenzione ticket","Codice 048 per patologia oncologica: si chiede alla ASL con il certificato dello specialista."],
+ ["Invalidità civile e handicap (Legge 104)","Per i malati oncologici la visita INPS ha tempi accelerati. Il medico di famiglia invia il certificato introduttivo."],
+ ["Lavoro","Assenze per terapia salvavita, passaggio reversibile al part-time, flessibilità e scelta della sede vicina."],
+ ["Contrassegno di sosta","Per chi ha difficoltà a camminare, si chiede al Comune."],
+ ["Familiari","Chi assiste ha diritto a permessi lavorativi (104) e congedi: vedi la guida AIMaC per i caregiver."]];
+function renderGuide(){
+  return `
+  <section class="hero"><span class="eyebrow">Informazioni da AIMaC e WALCE</span><h1>Guide pratiche</h1><p class="muted">Consigli generali: per la tua situazione vale sempre quello che dice l'oncologo.</p></section>
+  <div class="plain">${GUIDE.map(([t,ls,u])=>`<details class="g"><summary>${t}</summary><div class="body"><ul>${ls.map(l=>`<li>${esc(l)}</li>`).join("")}</ul>${u?`<a class="src" href="${u}" target="_blank" rel="noopener">Approfondisci su AIMaC</a>`:""}</div></details>`).join("")}
+  <details class="g"><summary>I tuoi diritti</summary><div class="body"><div class="list">${DIRITTI.map(([t,d])=>`<div class="li" style="align-items:flex-start"><div class="grow"><b>${t}</b><br><span class="small">${d}</span></div></div>`).join("")}</div>
+    <a class="src" href="${AIMAC}/libretti-tumore/diritti-malati-cancro-pillole" target="_blank" rel="noopener">I diritti dei malati in pillole (AIMaC)</a></div></details></div>
+
+  <section class="card"><h2>A chi rivolgersi</h2>
+    <div class="li" style="align-items:flex-start"><div class="grow"><b>AIMaC · help-line</b><br><span class="small">Volontari con oncologo, psicologo e avvocato: malattia, effetti collaterali, diritti. Lun–ven 9–19.</span><br>
+      <span class="tel">06 42989570</span> · <span class="tel">340 8472343</span></div><button class="btn sm soft" data-copy="0642989570">Copia</button></div>
+    <div class="li" style="align-items:flex-start"><div class="grow"><b>WALCE</b><br><span class="small">Associazione dedicata al tumore del polmone, dal 2006: informazione e supporto psicologico a pazienti e familiari, progetti su alimentazione e su come gestire gli effetti delle terapie sull'aspetto.</span><br><a href="https://www.walce.it" target="_blank" rel="noopener">walce.it</a></div></div>
+    <div class="li" style="align-items:flex-start"><div class="grow"><b>Forum AIMaC</b><br><span class="small">Esperienze di altri pazienti e familiari.</span><br><a href="https://forumtumore.aimac.it/tumore-polmone.html" target="_blank" rel="noopener">forumtumore.aimac.it</a></div></div>
+  </section>
+  <section class="card"><h3>Libretti gratuiti da leggere</h3><div class="list">
+    ${[["Il tumore del polmone",AIMAC+"/libretti-tumore/cancro-polmone"],["La chemioterapia",AIMAC+"/libretti-tumore/chemioterapia"],["La nutrizione nel malato oncologico",AIMAC+"/libretti-tumore/nutrizione-malato-cancro"],["Diario della fatigue (PDF)",AIMAC+"/download/libretti/diario_fatigue.pdf"],["I diritti del malato di cancro",AIMAC+"/libretti-tumore/diritti-malato-cancro"]].map(([t,u])=>`<a class="li" href="${u}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><span class="grow"><b>${t}</b></span><span aria-hidden="true">↗</span></a>`).join("")}</div>
+    <p class="src">Testi riassunti da aimac.it e da materiali WALCE. Non sostituiscono il parere del medico.</p></section>`;
+}
+
+/* ---------- render ed eventi ---------- */
+function render(){
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab));
+  $("#view").innerHTML=`<div class="wrap" style="padding:0">${({oggi:renderOggi,respira:renderRespira,diario:renderDiario,cure:renderCure,guide:renderGuide})[tab]()}</div>`;
+  bind();
+}
+function bind(){
+  const k=today();
+  const V=$("#view");
+  V.onclick=e=>{
+    const t=e.target.closest("button,[data-copy]");if(!t)return;
+    if(t.dataset.go){tab=t.dataset.go;render();scrollTo({top:0});return}
+    if(t.dataset.copy){copy(t.dataset.copy);return}
+    if(t.dataset.check){const g=giorno(k);g.checks[t.dataset.check]=!g.checks[t.dataset.check];saveGiorno(k);render();return}
+    if(t.dataset.cnt){const g=giorno(k),f=t.dataset.cnt;g[f]=Math.max(0,(g[f]||0)+Number(t.dataset.d));saveGiorno(k);render();return}
+    if(t.dataset.sub){sub=t.dataset.sub;stopBreath();render();return}
+    if(t.dataset.modo){modo=t.dataset.modo;stopBreath();render();return}
+    if(t.dataset.dur){durata=Number(t.dataset.dur);stopBreath();render();return}
+    if(t.id==="bgo"){if(bTimer){stopBreath();render()}else startBreath();return}
+    if(t.id==="wgo"){if(walk.on){walk.acc+=Math.floor((Date.now()-walk.start)/1000);walk.on=false;clearInterval(walk.t)}else{walk.on=true;walk.start=Date.now();walk.t=setInterval(()=>{const el=$("#wclock");if(!el)return;const s=Math.floor((Date.now()-walk.start)/1000)+walk.acc;el.textContent=pad(Math.floor(s/60))+":"+pad(s%60)},500)}render();return}
+    if(t.id==="wsave"){const s=walk.acc+(walk.on?Math.floor((Date.now()-walk.start)/1000):0);clearInterval(walk.t);walk={on:false,start:0,acc:0,t:null};giorno(k).cammino+=Math.max(1,Math.round(s/60));saveGiorno(k);toast("Camminata salvata");render();return}
+    if(t.dataset.delsp){S.profilo.esSpalla=S.profilo.esSpalla.filter(x=>x.id!==t.dataset.delsp);saveProfilo();render();return}
+    if(t.dataset.delc){S.profilo.cicli=S.profilo.cicli.filter(x=>x.id!==t.dataset.delc);saveProfilo();render();return}
+    if(t.dataset.delf){S.profilo.farmaci=S.profilo.farmaci.filter(x=>x.id!==t.dataset.delf);saveProfilo();render();return}
+    if(t.dataset.dom){const d=S.domande.find(x=>x.id===t.dataset.dom);d.fatta=!d.fatta;saveDomande();render();return}
+    if(t.dataset.deld){S.domande=S.domande.filter(x=>x.id!==t.dataset.deld);saveDomande();render();return}
+    if(t.dataset.flag){const g=giorno(k),f=t.dataset.flag;g.flag=g.flag.includes(f)?g.flag.filter(x=>x!==f):[...g.flag,f];saveGiorno(k);render();return}
+    if(t.id==="addIdee"){V.querySelectorAll("details.g li").forEach(li=>{if(!S.domande.some(d=>d.testo===li.textContent))S.domande.push({id:uid(),testo:li.textContent,fatta:false})});saveDomande();toast("Domande aggiunte");render();return}
+    if(t.id==="dSave"){const g=giorno(k);g.sint.compilato=true;g.temp=$("#dTemp").value;g.peso=$("#dPeso").value;g.note=$("#dNote").value;saveGiorno(k);toast("Diario salvato");
+      if(Number(String(g.temp).replace(",","."))>=38){tab="oggi"}render();scrollTo({top:0});return}
+    if(t.dataset.promchk){const k2=t.dataset.promchk;S.profilo.prom[k2]=!S.profilo.prom[k2];saveProfilo();render();return}
+    if(t.id==="provaN"){provaNotifica();return}
+    if(t.id==="riep"){const txt=riepilogo();openSheet(`<h2>Riepilogo per la visita</h2><pre style="white-space:pre-wrap;font-family:var(--f-body);margin:0;background:var(--sunk);padding:14px;border-radius:12px;user-select:all">${esc(txt)}</pre><div class="row"><button class="btn primary grow" data-copy="${esc(txt)}">Copia il testo</button><button class="btn grow" data-close>Chiudi</button></div>`);return}
+  };
+  V.oninput=e=>{
+    const t=e.target;
+    if(t.dataset.sint){const g=giorno(k);g.sint[t.dataset.sint]=Number(t.value);$("#o_"+t.dataset.sint).textContent=t.value;saveGiorno(k)}
+    if(t.id==="dTemp"){const v=Number(t.value.replace(",","."));$("#tempWarn").innerHTML=v>=38?`<div class="alert">38 °C o più: chiama subito il centro oncologico, non aspettare la visita.</div>`:""}
+    if(t.dataset.cn!=null){S.profilo.contatti[t.dataset.cn].nome=t.value;saveProfilo()}
+    if(t.dataset.ct!=null){S.profilo.contatti[t.dataset.ct].tel=t.value;saveProfilo()}
+    if(t.dataset.promt){S.profilo.prom[t.dataset.promt]=t.value;saveProfilo()}
+    if(t.id==="pNome"){S.profilo.nome=t.value;saveProfilo()}
+    if(t.id==="pAcqua"&&t.value){S.profilo.obAcqua=Math.max(1,Number(t.value));saveProfilo()}
+    if(t.id==="pPasti"&&t.value){S.profilo.obPasti=Math.max(1,Number(t.value));saveProfilo()}
+    if(t.id==="pCam"&&t.value!==""){S.profilo.obCammino=Math.max(0,Number(t.value));saveProfilo()}
+  };
+  V.onsubmit=e=>{
+    e.preventDefault();const f=e.target;
+    if(f.id==="spForm"){S.profilo.esSpalla.push({id:uid(),nome:$("#spNome").value.trim(),dettagli:$("#spDet").value.trim()});saveProfilo()}
+    if(f.id==="cForm"){S.profilo.cicli.push({id:uid(),data:$("#cData").value,tipo:$("#cTipo").value,nota:$("#cNota").value.trim()});saveProfilo()}
+    if(f.id==="fForm"){S.profilo.farmaci.push({id:uid(),nome:$("#fNome").value.trim(),orari:[$("#fO1").value,$("#fO2").value,$("#fO3").value].filter(Boolean),nota:$("#fNota").value.trim()});saveProfilo()}
+    if(f.id==="dForm"){S.domande.push({id:uid(),testo:$("#dTesto").value.trim(),fatta:false});saveDomande()}
+    toast("Aggiunto");render();
+  };
+}
+render();
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&!document.querySelector(".sheet-bg"))render()});
+(async()=>{
+  if(!isNative()) return;
+  await ensurePerm(true); await doSchedule();
+  try{LN().addListener("localNotificationActionPerformed",a=>{const tb=a?.notification?.extra?.tab;if(tb){tab=tb;render();scrollTo({top:0})}})}catch(e){}
+  if(tab==="cure") render();
+})();
+setInterval(()=>{if(tab==="oggi"&&!document.querySelector(".sheet-bg")&&document.activeElement===document.body)render()},60000);
+
+})();
+</script>
+
+</body>
+</html>
