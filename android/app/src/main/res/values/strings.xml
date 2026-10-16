@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Respiro</string>
-    <string name="title_activity_main">Respiro</string>
+    <string name="app_name">ANNA</string>
+    <string name="title_activity_main">ANNA</string>
     <string name="package_name">it.respiro.diario</string>
     <string name="custom_url_scheme">it.respiro.diario</string>
 </resources>

@@ -37,18 +37,18 @@ jobs:
           ./gradlew assembleRelease --no-daemon
 
       - name: Rinomina l'APK
-        run: cp android/app/build/outputs/apk/release/app-release.apk Respiro.apk
+        run: cp android/app/build/outputs/apk/release/app-release.apk ANNA.apk
 
       - name: Pubblica l'APK nella pagina Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v1.0.${{ github.run_number }}" Respiro.apk \
-            --title "Respiro 1.0.${{ github.run_number }}" \
-            --notes "Scarica Respiro.apk dal telefono e aprilo per installarlo." \
+          gh release create "v1.0.${{ github.run_number }}" ANNA.apk \
+            --title "ANNA 1.0.${{ github.run_number }}" \
+            --notes "Scarica ANNA.apk dal telefono e aprilo per installarlo." \
             --latest
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Respiro-apk
-          path: Respiro.apk
+          name: ANNA-apk
+          path: ANNA.apk
