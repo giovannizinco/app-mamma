@@ -145,7 +145,7 @@ details.g ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:
 /* nav */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);
   padding:6px max(8px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-right,0px))}
-nav.tabs .in{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+nav.tabs .in{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
 nav.tabs button{border:0;background:transparent;min-height:64px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer}
 nav.tabs button.on{color:var(--accent);background:var(--accent-soft)}
 nav.tabs svg{width:26px;height:26px}
@@ -155,6 +155,16 @@ nav.tabs svg{width:26px;height:26px}
   padding:20px max(18px,env(safe-area-inset-left,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;z-index:50;font-size:.95rem}
 .sync{font-size:.8rem;color:var(--muted)}
+/* cucina */
+.rc{display:flex;flex-direction:column;gap:4px;padding:14px;border-radius:12px;background:var(--sunk);border:0;width:100%;text-align:left;cursor:pointer;min-height:64px}
+.rc b{font-size:1.04rem}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:.8rem;font-weight:700;border-radius:999px;padding:2px 10px;background:var(--accent-soft);color:var(--ink)}
+.tag.w{background:var(--warm-soft)}
+.ingr{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.steps{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:8px}
+.vid{display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none}
+.step-big{font-size:1.35rem;line-height:1.45;min-height:7em;background:var(--sunk);border-radius:12px;padding:18px}
 @media (prefers-reduced-motion: reduce){.orb{transition:none}}
 </style>
 </head>
@@ -175,6 +185,7 @@ nav.tabs svg{width:26px;height:26px}
     <button data-tab="respira"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7"/></svg>Respiro</button>
     <button data-tab="diario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>Diario</button>
     <button data-tab="cure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Cure</button>
+    <button data-tab="cucina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 11h16a8 8 0 0 1-16 0Z"/><path d="M9 7c0-1.5 1-1.5 1-3M14 7c0-1.5 1-1.5 1-3M2.5 11h19"/></svg>Cucina</button>
     <button data-tab="guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/></svg>Guide</button>
   </div>
 </nav>
@@ -341,6 +352,7 @@ function renderOggi(){
     <h2>Corpo</h2>
     ${counterHTML("acqua","Acqua","bicchieri da 250 ml, obiettivo "+p.obAcqua+" (circa 1,5 litri)",g.acqua,p.obAcqua,true)}
     ${counterHTML("pasti","Pasti e spuntini","piccoli e frequenti, obiettivo "+p.obPasti,g.pasti,p.obPasti)}
+    <button class="btn sm soft" data-go="cucina">Idee per i pasti di oggi</button>
     ${counterHTML("respiro","Esercizi di respiro","obiettivo 2 sessioni",g.respiro,2)}
     ${counterHTML("cammino","Camminata","minuti, obiettivo "+p.obCammino,g.cammino,p.obCammino,false,5)}
     ${checkHTML("bocca_m","Igiene della bocca, mattina","spazzolino morbido e sciacquo",g.checks.bocca_m)}
@@ -559,10 +571,198 @@ function renderGuide(){
     <p class="src">Testi riassunti da aimac.it e da materiali WALCE. Non sostituiscono il parere del medico.</p></section>`;
 }
 
+/* ---------- CUCINA ---------- */
+const DISTURBI=[["nausea","Nausea"],["bocca","Bocca dolorante"],["diarrea","Diarrea"],["stitichezza","Stitichezza"],["appetito","Poco appetito"],["gusto","Gusto alterato"]];
+const NOME_DIST=Object.fromEntries(DISTURBI);
+const YT="https://www.youtube.com/watch?v=";
+// Video verificati (YouTube oEmbed). Dosi e passi scritti qui sono quelli da seguire.
+const RICETTE=[
+ {id:"pastina",nome:"Pastina in brodo di verdure",per:["nausea","diarrea","bocca","appetito"],tempo:"45 min",porz:"2 porzioni",mano:false,
+  perche:"Calda, morbida e facile da mandare giù. Il brodo aiuta anche a bere di più.",
+  ingr:["1 patata","1 carota","1 costa di sedano","½ cipolla","1,2 litri di acqua","1 cucchiaio di passata di pomodoro","120 g di pastina","2 cucchiai di parmigiano grattugiato a piatto","1 filo di olio extravergine","sale"],
+  passi:["Lava e sbuccia patata, carota e cipolla. Tagliale a pezzi grossi insieme al sedano.","Metti le verdure in una pentola con l'acqua fredda e un pizzico di sale.","Porta a bollore e lascia sobbollire a fuoco basso per circa 30 minuti.","Aggiungi il cucchiaio di passata e cuoci ancora 5 minuti.","Togli le verdure con una schiumarola e frullale fino a ottenere una crema.","Cuoci la pastina nel brodo per il tempo scritto sulla confezione.","Spegni il fuoco, unisci la crema di verdure, un filo d'olio e il parmigiano. Mescola e lascia intiepidire."],
+  info:["Proteine: circa 12 g a porzione.","Se hai la bocca dolorante mangiala tiepida, non bollente.","Se hai nausea va bene anche tiepida o a temperatura ambiente: ha meno odore.","Il brodo avanzato si conserva in frigo 2 giorni o in freezer per un mese.","Contiene glutine, latte e sedano."],
+  video:{url:YT+"BHNfmjZEkjA",fonte:"YouTube · Cookist · 3 min",nota:"nel video le dosi sono per 4"}},
+
+ {id:"stracciatella",nome:"Stracciatella in brodo",per:["appetito","bocca","diarrea"],tempo:"50 min",porz:"2 porzioni",mano:true,
+  perche:"Uovo e parmigiano nel brodo: tante proteine in un piatto leggero da mangiare.",
+  ingr:["1 litro di brodo vegetale (fatto in casa come nella pastina, oppure pronto)","2 uova","60 g di parmigiano grattugiato","1 pizzico di noce moscata","sale"],
+  passi:["Se fai il brodo in casa, preparalo come nella ricetta della pastina e filtralo.","In una ciotola sbatti le uova con il parmigiano e la noce moscata.","Porta il brodo a bollore.","Versa il composto di uova a filo nel brodo, mescolando con una frusta o una forchetta.","Lascia cuocere ancora 5 minuti, finché l'uovo è ben rappreso a fiocchi.","Assaggia, aggiusta di sale e servi tiepida."],
+  info:["Proteine: circa 16 g a porzione.","L'uovo deve essere ben cotto: niente parti liquide.","Si prepara anche con una mano sola se usi un brodo pronto.","Da mangiare subito; non conservarla.","Contiene uova e latte."],
+  video:{url:YT+"SU7xZhjm_L0",fonte:"YouTube · GialloZafferano · 1 min"}},
+
+ {id:"zucca",nome:"Crema di zucca e patate",per:["bocca","diarrea","appetito"],tempo:"40 min",porz:"4 porzioni",mano:false,
+  perche:"Vellutata dolce e liscia, non irrita la bocca. Con la ricotta diventa più nutriente.",
+  ingr:["600 g di polpa di zucca (circa 1 kg con la buccia)","200 g di patate","80 g di cipolla","1 litro di brodo vegetale","3 cucchiai di olio extravergine","1 pizzico di noce moscata e di cannella (facoltativi)","sale","per servire: 2 cucchiai di ricotta o di parmigiano a piatto"],
+  passi:["Sbuccia la zucca, togli i semi e tagliala a cubetti. Sbuccia le patate e tagliale a cubetti.","Trita la cipolla e falla appassire in pentola con l'olio, a fuoco dolce, per 5 minuti.","Aggiungi zucca e patate e copri con il brodo caldo. Sala poco.","Cuoci 25–30 minuti, finché le verdure si schiacciano con la forchetta. Aggiungi brodo se si asciuga.","Frulla tutto con il frullatore a immersione fino a renderla liscia.","Servi tiepida con un cucchiaio di ricotta o di parmigiano."],
+  info:["Proteine: circa 3 g a porzione, circa 7 g con ricotta o parmigiano.","Si conserva in frigo 2 giorni o in freezer in porzioni.","Se hai diarrea evita i crostini e usa poco olio.","Per non affaticare la spalla puoi comprare la zucca già pulita a cubetti."],
+  video:{url:YT+"gBLWRyvMHEM",fonte:"YouTube · GialloZafferano · 6 min"}},
+
+ {id:"lenticchie",nome:"Vellutata di lenticchie rosse",per:["stitichezza","appetito"],tempo:"30 min",porz:"4 porzioni",mano:false,
+  perche:"Le lenticchie rosse cuociono in fretta e danno proteine e fibre. Ideale se l'intestino è pigro.",
+  ingr:["250 g di lenticchie rosse decorticate","1 cipolla","1 patata","1 carota","3 cucchiai di olio extravergine","circa 1,2 litri di acqua calda","sale","paprika dolce (facoltativa, non piccante)"],
+  passi:["Sciacqua le lenticchie in un colino sotto l'acqua corrente.","Trita la cipolla e taglia a pezzetti carota e patata.","Falle insaporire in pentola con l'olio per 3–4 minuti.","Aggiungi le lenticchie e l'acqua calda e porta a bollore.","Cuoci 20 minuti a fuoco medio, mescolando ogni tanto. Sala a metà cottura e aggiungi acqua se si addensa troppo.","Frulla con il frullatore a immersione fino a ottenere una crema."],
+  info:["Proteine: circa 15 g a porzione.","Bevi di più nei giorni in cui mangi legumi: le fibre funzionano meglio con l'acqua.","Se hai diarrea o pancia gonfia, rimandala a un altro giorno.","Nel video si serve con limone: se hai la bocca dolorante non metterlo.","Si conserva in frigo 2 giorni o in freezer."],
+  video:{url:YT+"rppGAiBAlhA",fonte:"YouTube · Cucina Turca di Sezin · 5 min",nota:"nel video le dosi sono in bicchieri"}},
+
+ {id:"risotto",nome:"Risotto al parmigiano",per:["diarrea","nausea","bocca"],tempo:"25 min",porz:"2 porzioni",mano:true,
+  perche:"Riso in bianco cremoso: delicato per lo stomaco e per l'intestino.",
+  ingr:["180 g di riso (Carnaroli o Arborio)","½ cipollotto","1 filo di olio extravergine","700 ml di brodo vegetale caldo","40 g di parmigiano grattugiato","15 g di burro","sale"],
+  passi:["Tieni il brodo caldo in un pentolino a fuoco basso.","Trita il cipollotto e fallo appassire con l'olio per 2–3 minuti.","Aggiungi il riso e tostalo 1 minuto, mescolando.","Versa un mestolo di brodo e mescola. Quando si asciuga aggiungine un altro.","Continua così per 16–18 minuti, finché il riso è morbido.","Spegni il fuoco, aggiungi burro e parmigiano e mescola bene. Lascia riposare 1 minuto e servi."],
+  info:["Proteine: circa 13 g a porzione.","Non serve il vino: qui non c'è.","Con la nausea mangialo tiepido, in piccole porzioni.","Meglio mangiarlo subito; gli avanzi in frigo al massimo 1 giorno, ben riscaldati.","Contiene latte."],
+  video:{url:YT+"n292UbMVj1Q",fonte:"YouTube · Tasty & Easy · 3 min"}},
+
+ {id:"mele",nome:"Mele cotte al forno",per:["diarrea","nausea","bocca"],tempo:"50 min",porz:"4 porzioni",mano:false,
+  perche:"La frutta cotta è più delicata della cruda e va bene quando l'intestino è irritato.",
+  ingr:["4 mele (Golden o Stark)","40 g di zucchero di canna","1 cucchiaino di cannella","succo e scorza di 1 limone non trattato (facoltativi)","100 ml di acqua"],
+  passi:["Accendi il forno a 200 °C ventilato. Lava le mele.","Taglia la calotta di ogni mela e togli il torsolo con un coltellino o uno scavino.","Scava un po' di polpa e mescolala con cannella, 30 g di zucchero e, se vuoi, succo e scorza di limone.","Riempi le mele con questo composto, rimetti la calotta e cospargi con il resto dello zucchero.","Mettile in una pirofila con l'acqua sul fondo.","Cuoci 35–40 minuti, bagnandole ogni tanto con il loro sughetto. Servile tiepide."],
+  info:["Più semplice: togli solo il torsolo e cuocile intere con zucchero e cannella.","Se hai la bocca dolorante non mettere il limone.","Il liquore che a volte si aggiunge non serve: lascialo fuori.","Si conservano in frigo 3 giorni."],
+  video:{url:YT+"XzfkP9D8wlM",fonte:"YouTube · MypersonaltrainerTv · 5 min"}},
+
+ {id:"frullato",nome:"Frullato di banana",per:["appetito","nausea","bocca"],tempo:"5 min",porz:"2 bicchieri",mano:true,
+  perche:"Si beve in pochi sorsi e dà energia quando non riesci a mangiare.",
+  ingr:["3 banane mature (circa 350 g sbucciate)","250 ml di latte","1 cucchiaino di zucchero (facoltativo)","per più proteine: 100 g di yogurt greco"],
+  passi:["Sbuccia le banane e tagliale a rondelle.","Mettile nel frullatore con il latte e, se vuoi, zucchero e yogurt greco.","Frulla per 1 minuto, finché è liscio e cremoso.","Bevilo subito, a piccoli sorsi."],
+  info:["Proteine: circa 6 g a bicchiere, circa 11 g con lo yogurt greco.","Freddo dà meno nausea: puoi usare banane a rondelle tenute in freezer.","Se hai diarrea usa latte senza lattosio.","Se i globuli bianchi sono molto bassi chiedi all'oncologo se puoi mangiare lo yogurt.","Contiene latte."],
+  video:{url:YT+"HvS1C-Pk5yQ",fonte:"YouTube · Valentina Piccole Ricette · 1 min"}},
+
+ {id:"semolino",nome:"Crema di semolino",per:["bocca","appetito","nausea"],tempo:"10 min",porz:"4 coppette",mano:true,
+  perche:"Morbidissima, si mangia col cucchiaino anche con la bocca dolorante.",
+  ingr:["500 ml di latte intero","50–80 g di zucchero","50 g di semolino","1 bacca di vaniglia o 1 bustina di vanillina"],
+  passi:["Se usi la bacca di vaniglia, aprila e raschia i semini con un coltello.","Scalda il latte con zucchero e vaniglia, senza farlo bollire.","Versa il semolino a pioggia, poco alla volta, mescolando sempre con una frusta.","Cuoci a fuoco basso 4–5 minuti, sempre mescolando, finché diventa denso.","Versa nelle coppette. Si mangia tiepida o fredda."],
+  info:["Proteine: circa 6 g a coppetta.","Con la nausea è meglio fredda di frigo.","Si conserva in frigo coperta per 2 giorni.","Contiene latte e glutine."],
+  video:{url:YT+"i4k4PR1ipgk",fonte:"YouTube · TiMangio Ricette · 5 min"}},
+
+ {id:"polpette",nome:"Polpette di pollo e patate al forno",per:["appetito","bocca"],tempo:"1 ora",porz:"4 porzioni (circa 20 polpette)",mano:false,
+  perche:"Morbide e ricche di proteine. Se ne fanno tante e si congelano.",
+  ingr:["400 g di petto di pollo","400 g di patate","60 g di parmigiano grattugiato","1 uovo","50 g di pangrattato","1 cucchiaino scarso di sale","pepe e curcuma (facoltativi)","olio extravergine"],
+  passi:["Lessa le patate con la buccia per circa 30 minuti, sbucciale e schiacciale con lo schiacciapatate.","Taglia il pollo a pezzi e tritalo nel mixer.","In una ciotola unisci pollo, patate, parmigiano, uovo, pangrattato e sale. Impasta bene.","Con le mani umide forma delle polpette grandi come una noce.","Mettile su una teglia con carta da forno e un filo d'olio.","Cuoci in forno ventilato a 200 °C per circa 20–25 minuti, girandole a metà.","Spezzane una: dentro non deve essere rosa. Se lo è, rimettile in forno qualche minuto."],
+  info:["Proteine: circa 30 g a porzione (5 polpette).","Lavati le mani e lava tagliere e mixer dopo aver toccato il pollo crudo.","Puoi congelarle da cotte: si scaldano in padella o in forno.","Contengono uova, latte e glutine."],
+  video:{url:YT+"REfbGm8tLrQ",fonte:"YouTube · LA Cucina di Raffy · 2 min",nota:"controlla sempre che siano cotte dentro"}},
+
+ {id:"merluzzo",nome:"Merluzzo al forno con patate",per:["gusto","appetito"],tempo:"1 ora",porz:"4 porzioni",mano:false,
+  perche:"Pesce bianco e patate in un'unica teglia. La panatura con le erbe dà sapore anche quando il gusto è alterato.",
+  ingr:["500 g di filetto di merluzzo senza spine","1 kg di patate","120 g di pomodorini","100 g di pangrattato","erba cipollina o prezzemolo","20 g di capperi e 2 acciughe (facoltativi, molto salati)","olio extravergine","origano","sale"],
+  passi:["Accendi il forno a 190 °C.","Frulla il pangrattato con l'erba cipollina (e, se vuoi, capperi e acciughe) per fare la panatura.","Sbuccia le patate e tagliale a cubetti. Taglia a metà i pomodorini e condiscili con olio, sale e origano.","Passa il merluzzo nella panatura, premendo bene.","Metti il pesce in una teglia unta, con patate e pomodorini intorno e un filo d'olio.","Cuoci per 45–50 minuti, finché le patate sono dorate.","Il pesce è cotto quando è bianco e si sfalda con la forchetta."],
+  info:["Proteine: circa 25 g a porzione.","Il pesce deve essere ben cotto; controlla che non ci siano spine.","Se hai la bocca dolorante togli i pomodorini e non mettere capperi e acciughe.","Avanzi in frigo 1 giorno al massimo.","Contiene pesce e glutine."],
+  video:{url:YT+"F-6IdLiU_Q4",fonte:"YouTube · GialloZafferano · 1 min",nota:"nel video c'è anche un cucchiaio di zucchero a velo sui pomodorini: non serve"}},
+
+ {id:"frittata",nome:"Frittata di zucchine al forno",per:["appetito","bocca"],tempo:"50 min",porz:"4 porzioni",mano:false,
+  perche:"Al forno, senza girarla in padella. Buona anche fredda il giorno dopo.",
+  ingr:["8 uova","500 g di zucchine","100 g di parmigiano o grana grattugiato","1 cucchiaio di olio nell'impasto più un filo per la teglia","qualche foglia di basilico","sale e pepe"],
+  passi:["Accendi il forno a 180 °C statico.","Lava le zucchine e tagliale a fettine sottilissime.","In una ciotola sbatti le uova con formaggio, sale, pepe, basilico e il cucchiaio di olio.","Aggiungi le zucchine e mescola.","Versa in una teglia rotonda da 30–32 cm foderata di carta forno bagnata e strizzata e unta d'olio.","Cuoci circa 35 minuti, finché è dorata e soda al centro."],
+  info:["Proteine: circa 21 g a porzione.","Deve essere ben cotta anche al centro: niente uovo liquido.","Se nel video vedi i fiori di zucca, puoi farne a meno.","Si conserva in frigo 2 giorni.","Contiene uova e latte."],
+  video:{url:YT+"FHYQRqMBWAg",fonte:"YouTube · GialloZafferano · 2 min"}},
+
+ {id:"pure",nome:"Purè di patate",per:["bocca","diarrea","nausea"],tempo:"45 min",porz:"4 porzioni",mano:false,
+  perche:"Morbido, caldo e confortante: si mangia anche quando masticare dà fastidio.",
+  ingr:["1 kg di patate a pasta gialla","250 ml di latte intero","50 g di burro","sale","noce moscata","30 g di parmigiano (facoltativo, per più proteine)"],
+  passi:["Metti le patate con la buccia in una pentola di acqua fredda.","Porta a bollore e cuoci 30–40 minuti, finché una forchetta entra facilmente.","Sbucciale ancora calde e passale con lo schiacciapatate in un'altra pentola.","Aggiungi sale e noce moscata.","Scalda il latte e versalo poco alla volta, mescolando con una frusta a fuoco basso.","Spegni e aggiungi il burro a pezzetti (e il parmigiano). Mescola fino a renderlo cremoso."],
+  info:["Proteine: circa 7 g a porzione, circa 9 g con il parmigiano.","Se hai diarrea usa latte senza lattosio.","Si conserva in frigo 2 giorni; per scaldarlo aggiungi un goccio di latte.","Contiene latte."],
+  video:{url:YT+"XnKm3rR0YtM",fonte:"YouTube · GialloZafferano · 1 min"}},
+
+ {id:"hummus",nome:"Hummus di ceci",per:["stitichezza","appetito"],tempo:"10 min",porz:"circa 700 g (6–8 spuntini)",mano:false,
+  perche:"Crema di ceci da spalmare: uno spuntino nutriente con proteine e fibre.",
+  ingr:["500 g di ceci già cotti (sgocciolati)","70 g di tahina (crema di sesamo)","50 g di olio extravergine","succo di 1 limone (nel video ne usano di più)","2–3 cucchiai di acqua","sale","paprika dolce e prezzemolo per servire (facoltativi)"],
+  passi:["Scola i ceci e sciacquali sotto l'acqua corrente.","Mettili nel mixer con tahina, olio, succo di limone e sale.","Frulla finché diventa una crema liscia.","Aggiungi l'acqua un cucchiaio alla volta, finché è morbida come piace a te.","Servi con un filo d'olio e, se vuoi, paprika dolce e prezzemolo."],
+  info:["Proteine: circa 7 g ogni 100 g (3–4 cucchiai).","Nel video c'è l'aglio crudo: è facoltativo, meglio senza.","Spalmalo su pane morbido o cracker, o usalo con verdure cotte.","In frigo, in un barattolo chiuso, 3 giorni.","Contiene sesamo. Con la bocca dolorante il limone può bruciare."],
+  video:{url:YT+"JQvW_rn4AOU",fonte:"YouTube · GialloZafferano · 2 min"}},
+
+ {id:"pasta_ricotta",nome:"Pasta con crema di zucchine e ricotta",per:["appetito","bocca","gusto"],tempo:"25 min",porz:"2 porzioni",mano:false,
+  perche:"Un primo cremoso e profumato alla menta, con le proteine della ricotta.",
+  ingr:["150 g di pasta corta","200 g di zucchine","125 g di ricotta","5 foglie di menta","1 spicchio di aglio (si toglie dopo)","1 cucchiaio di olio extravergine","sale","pepe (facoltativo)"],
+  passi:["Metti sul fuoco l'acqua per la pasta.","Lava le zucchine e tagliale a cubetti.","Scalda l'olio con lo spicchio d'aglio per 1 minuto, poi togli l'aglio.","Aggiungi le zucchine con un pizzico di sale e cuocile finché sono morbide, circa 10 minuti.","Frulla le zucchine con la menta, poi aggiungi la ricotta e frulla ancora fino a una crema.","Cuoci la pasta, scolala e condiscila con la crema."],
+  info:["Proteine: circa 17 g a porzione.","Con la bocca dolorante non mettere il pepe.","La menta aiuta quando il cibo \"non sa di niente\".","La ricotta del supermercato è pastorizzata: va bene.","Contiene glutine e latte."],
+  video:{url:YT+"ypUzzmKRyMU",fonte:"YouTube · cucina preDiletta · 2 min",nota:"nel video le dosi sono per 4"}},
+
+ {id:"ghiaccioli",nome:"Ghiaccioli di pesca e yogurt",per:["bocca","nausea"],tempo:"10 min + 5 ore in freezer",porz:"6 ghiaccioli",mano:false,
+  perche:"Il freddo dà sollievo alla bocca infiammata e calma la nausea.",
+  ingr:["250 g di pesche mature sbucciate","300 g di yogurt alla vaniglia","20 g di miele"],
+  passi:["Sbuccia le pesche, togli il nocciolo e tagliale a pezzi.","Frullale con lo yogurt e il miele fino a ottenere una crema liscia.","Versa negli stampi per ghiaccioli, oppure in bicchierini di plastica coperti con pellicola e un bastoncino infilato al centro.","Metti in freezer per almeno 5 ore.","Per toglierli, passa lo stampo sotto l'acqua per qualche secondo."],
+  info:["Niente agrumi: non bruciano sulla bocca.","Fuori stagione vanno bene le pesche sciroppate sgocciolate.","Se i globuli bianchi sono molto bassi chiedi all'oncologo se puoi mangiare lo yogurt.","In freezer si conservano un mese.","Contiene latte."],
+  video:{url:YT+"3VHRkV1AirA",fonte:"YouTube · La famiglia di Marti e Michi in cucina · 4 min"}},
+
+ {id:"scaloppine",nome:"Scaloppine di pollo al limone",per:["gusto","appetito"],tempo:"20 min",porz:"2 porzioni",mano:false,
+  perche:"Il limone aiuta a coprire il sapore metallico che a volte lascia la chemio.",
+  ingr:["300 g di petto di pollo a fette sottili","farina per infarinare","1 limone grande (succo e un po' di scorza)","2 cucchiai di olio extravergine","per la salsina: 20 g di burro, 20 g di farina, 100 ml di brodo vegetale caldo","prezzemolo tritato","sale e pepe"],
+  passi:["Infarina le fettine di pollo da entrambi i lati.","Scalda l'olio in padella e cuoci le fettine a fuoco medio 4–5 minuti, con sale e pepe.","Girale, versa metà del succo di limone e cuoci altri 4 minuti. Toglile e tienile al caldo.","Nella stessa padella sciogli il burro, aggiungi la farina e mescola.","Versa il resto del succo di limone e il brodo caldo, mescolando, e fai addensare 1 minuto.","Aggiungi prezzemolo e scorza di limone, rimetti il pollo nella salsina e servi."],
+  info:["Proteine: circa 35 g a porzione.","Il pollo deve essere cotto bene: dentro bianco, non rosa.","Con la bocca dolorante è troppo acido: scegli un'altra ricetta.","Se il cibo sa di metallo, prova anche posate di plastica.","Contiene glutine e latte."],
+  video:{url:YT+"RvV5i2ixfmo",fonte:"YouTube · GialloZafferano · 1 min",nota:"nel video le dosi sono per 4"}},
+];
+const REGOLE=["Carne, pesce e uova sempre ben cotti: niente crudi, carpaccio, sushi, uova crude (tiramisù, maionese fatta in casa).",
+ "Latte, yogurt e formaggi solo pastorizzati; niente formaggi a latte crudo.",
+ "Frutta e verdura lavate bene sotto l'acqua corrente; se le difese sono basse chiedi se è meglio mangiarle cotte o sbucciate.",
+ "Lavati le mani prima di cucinare e dopo aver toccato carne o pesce crudi; taglieri separati.",
+ "Avanzi in frigo subito, coperti, da mangiare entro 1–2 giorni e ben riscaldati.",
+ "Pompelmo, iperico, tisane e integratori \"naturali\" possono interferire con alcuni farmaci: chiedi all'oncologo prima di usarli."];
+let cucinaF=null;
+// Disturbi segnati oggi nel diario, per proporre subito le ricette adatte.
+function disturbiOggi(){
+  const g=giorno(today()),out=new Set(),fl=g.flag||[];
+  if(fl.includes("Vomito")) out.add("nausea");
+  if(fl.includes("Diarrea")) out.add("diarrea");
+  if(fl.includes("Stitichezza")) out.add("stitichezza");
+  if(fl.includes("Bocca dolorante")) out.add("bocca");
+  if(fl.includes("Gusto alterato")) out.add("gusto");
+  if(g.sint.compilato&&(g.sint.nausea??0)>=4) out.add("nausea");
+  if(g.sint.compilato&&(g.sint.appet??0)>=4) out.add("appetito");
+  return [...out];
+}
+function renderCucina(){
+  const oggi=disturbiOggi();
+  const f=cucinaF??(oggi[0]||"tutte");
+  const lista=f==="tutte"?RICETTE:RICETTE.filter(r=>r.per.includes(f));
+  return `
+  <section class="hero"><span class="eyebrow">Ricette semplici</span><h1>Cucina</h1>
+    <p class="muted">Piatti facili, passo passo e con il video. Durante la chemio l'importante è mangiare abbastanza, soprattutto proteine: non serve mangiare "leggero".</p></section>
+  ${oggi.length&&cucinaF==null?`<p class="note">Nel diario di oggi hai segnato: <b>${oggi.map(d=>NOME_DIST[d]).join(", ")}</b>. Ti mostro le ricette adatte.</p>`:""}
+  <section class="card"><h3>Ricette adatte se hai…</h3>
+    <div class="pills">${[["tutte","Tutte"],...DISTURBI].map(([k,l])=>`<button class="pill${f===k?" on":""}" data-cf="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div></section>
+  <div class="plain">${lista.map(r=>`<button class="rc" data-ric="${r.id}"><b>${esc(r.nome)}</b>
+    <span class="small muted">${esc(r.tempo)} · ${esc(r.porz)}${r.mano?" · si fa anche con una mano":""}</span>
+    <span class="tags">${r.per.map(d=>`<span class="tag${d===f?"":" w"}">${NOME_DIST[d]}</span>`).join("")}</span></button>`).join("")||`<p class="muted">Nessuna ricetta per questo filtro.</p>`}</div>
+  <details class="g"><summary>Regole d'oro in cucina durante la chemio</summary><div class="body"><ul>${REGOLE.map(l=>`<li>${esc(l)}</li>`).join("")}</ul>
+    <a class="src" href="${AIMAC}/libretti-tumore/nutrizione-malato-cancro" target="_blank" rel="noopener">La nutrizione nel malato oncologico (AIMaC)</a></div></details>
+  <p class="src">Ricette e consigli generali. Se il nutrizionista o l'oncologo ti hanno dato indicazioni diverse, valgono le loro. I video sono di siti di cucina esterni: segui le dosi e i consigli scritti qui.</p>`;
+}
+function ricettaHTML(r){
+  return `<div class="row between"><h2 class="grow">${esc(r.nome)}</h2><button class="x" data-close aria-label="Chiudi">✕</button></div>
+  <p class="small muted">${esc(r.tempo)} · ${esc(r.porz)}${r.mano?" · si fa anche con una mano":""}</p>
+  <div class="tags">${r.per.map(d=>`<span class="tag">${NOME_DIST[d]}</span>`).join("")}</div>
+  <p>${esc(r.perche)}</p>
+  <a class="btn primary vid" href="${r.video.url}" target="_blank" rel="noopener"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Guarda il video</a>
+  <p class="src" style="margin-top:-6px">${esc(r.video.fonte)}${r.video.nota?" · "+esc(r.video.nota):""}</p>
+  <button class="btn soft" data-step="0">Cucina passo passo</button>
+  <h3>Ingredienti</h3><ul class="ingr">${r.ingr.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>
+  <h3>Come si fa</h3><ol class="steps">${r.passi.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
+  <div class="note"><b>Informazioni utili</b><ul class="ingr" style="margin-top:6px">${r.info.map(i=>`<li>${esc(i)}</li>`).join("")}</ul></div>
+  <button class="btn" data-close>Chiudi</button>`;
+}
+function passoHTML(r,i){
+  const n=r.passi.length;
+  return `<div class="row between"><span class="eyebrow">${esc(r.nome)}</span><button class="x" data-close aria-label="Chiudi">✕</button></div>
+  <h2>Passo ${i+1} di ${n}</h2>
+  <p class="step-big">${esc(r.passi[i])}</p>
+  <div class="row"><button class="btn grow" data-step="${i-1}" ${i===0?"disabled":""}>Indietro</button>
+    ${i<n-1?`<button class="btn primary grow" data-step="${i+1}">Avanti</button>`:`<button class="btn primary grow" data-step="fine">Fatto!</button>`}</div>
+  <button class="btn ghost" data-step="ricetta">Torna alla ricetta</button>`;
+}
+function openRicetta(id){
+  const r=RICETTE.find(x=>x.id===id);if(!r)return;
+  const bg=openSheet(ricettaHTML(r)),sh=bg.querySelector(".sheet");
+  sh.addEventListener("click",e=>{
+    const b=e.target.closest("[data-step]");if(!b)return;
+    const v=b.dataset.step;
+    if(v==="fine"){bg.remove();toast("Buon appetito!");return}
+    sh.innerHTML=v==="ricetta"?ricettaHTML(r):passoHTML(r,Number(v));
+    sh.scrollTop=0;sh.querySelector("button:not([disabled])")?.focus();
+  });
+}
+
 /* ---------- render ed eventi ---------- */
 function render(){
   document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab));
-  $("#view").innerHTML=`<div class="wrap" style="padding:0">${({oggi:renderOggi,respira:renderRespira,diario:renderDiario,cure:renderCure,guide:renderGuide})[tab]()}</div>`;
+  $("#view").innerHTML=`<div class="wrap" style="padding:0">${({oggi:renderOggi,respira:renderRespira,diario:renderDiario,cure:renderCure,cucina:renderCucina,guide:renderGuide})[tab]()}</div>`;
   bind();
 }
 function bind(){
@@ -591,6 +791,8 @@ function bind(){
       if(Number(String(g.temp).replace(",","."))>=38){tab="oggi"}render();scrollTo({top:0});return}
     if(t.dataset.promchk){const k2=t.dataset.promchk;S.profilo.prom[k2]=!S.profilo.prom[k2];saveProfilo();render();return}
     if(t.id==="provaN"){provaNotifica();return}
+    if(t.dataset.cf!=null){cucinaF=t.dataset.cf;render();return}
+    if(t.dataset.ric){openRicetta(t.dataset.ric);return}
     if(t.id==="riep"){const txt=riepilogo();openSheet(`<h2>Riepilogo per la visita</h2><pre style="white-space:pre-wrap;font-family:var(--f-body);margin:0;background:var(--sunk);padding:14px;border-radius:12px;user-select:all">${esc(txt)}</pre><div class="row"><button class="btn primary grow" data-copy="${esc(txt)}">Copia il testo</button><button class="btn grow" data-close>Chiudi</button></div>`);return}
   };
   V.oninput=e=>{
