@@ -9,7 +9,7 @@ I dati restano salvati solo sul telefono dove l'app è installata.
 ## Scaricare l'APK
 
 1. Apri la pagina **Releases** di questo repository dal telefono.
-2. Scarica `ANNA.apk` dall'ultima versione.
+2. Scarica `ForzaMamma.apk` dall'ultima versione.
 3. Aprilo e conferma l'installazione. La prima volta Android chiede di permettere
    l'installazione di app da questa fonte (browser o app File).
 4. Al primo avvio consenti le notifiche.

@@ -37,18 +37,18 @@ jobs:
           ./gradlew assembleRelease --no-daemon
 
       - name: Rinomina l'APK
-        run: cp android/app/build/outputs/apk/release/app-release.apk ANNA.apk
+        run: cp android/app/build/outputs/apk/release/app-release.apk ForzaMamma.apk
 
       - name: Pubblica l'APK nella pagina Releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v1.0.${{ github.run_number }}" ANNA.apk \
-            --title "ANNA 1.0.${{ github.run_number }}" \
-            --notes "Scarica ANNA.apk dal telefono e aprilo per installarlo." \
+          gh release create "v1.0.${{ github.run_number }}" ForzaMamma.apk \
+            --title "Forza Mamma 1.0.${{ github.run_number }}" \
+            --notes "Scarica ForzaMamma.apk dal telefono e aprilo per installarlo." \
             --latest
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ANNA-apk
-          path: ANNA.apk
+          name: ForzaMamma-apk
+          path: ForzaMamma.apk
