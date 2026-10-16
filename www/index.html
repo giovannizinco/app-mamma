@@ -165,6 +165,11 @@ nav.tabs svg{width:26px;height:26px}
 .steps{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:8px}
 .vid{display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none}
 .step-big{font-size:1.35rem;line-height:1.45;min-height:7em;background:var(--sunk);border-radius:12px;padding:18px}
+/* chiamate */
+a.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;color:inherit}
+a.btn.primary{color:var(--accent-ink)}
+.btn.alarm{background:var(--alarm);border-color:var(--alarm);color:#fff}
+.calls{display:flex;flex-direction:column;gap:6px;flex:none}
 @media (prefers-reduced-motion: reduce){.orb{transition:none}}
 </style>
 </head>
@@ -302,7 +307,7 @@ const ALLARMI=[
 $("#sosBtn").onclick=()=>openSheet(`
   <h2>Chiama subito se…</h2>
   <div class="list">${ALLARMI.map(([t,s])=>`<div class="li" style="align-items:flex-start"><div class="grow"><b>${t}</b>${s?`<p class="small muted">${s}</p>`:""}</div></div>`).join("")}</div>
-  <div class="alert">Emergenza grave (non respiri, svenimento, dolore al petto forte): <span class="tel" style="font-size:1.4rem">112</span></div>
+  <div class="alert">Emergenza grave (non respiri, svenimento, dolore al petto forte):<a class="btn alarm" href="tel:112">${PHONE_ICON}Chiama il 112</a></div>
   <h3>I tuoi numeri</h3>
   <div class="list">${contattiHTML(true)}</div>
   <button class="btn" data-close>Chiudi</button>`);
@@ -313,10 +318,14 @@ function openSheet(html){
     const c=e.target.closest("[data-copy]");if(c)copy(c.dataset.copy)};
   document.body.appendChild(bg);bg.querySelector("button")?.focus();return bg;
 }
+// Numero pulito per il link tel: (solo cifre, + iniziale se c'è).
+const telNum=t=>{const v=String(t??"").trim();return (v.startsWith("+")?"+":"")+v.replace(/\D/g,"")};
+const PHONE_ICON='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/></svg>';
+function chiamaHTML(tel,label="Chiama"){return `<a class="btn sm primary" href="tel:${esc(telNum(tel))}">${PHONE_ICON}${label}</a>`}
 function contattiHTML(onlyFilled){
   const cs=S.profilo.contatti.filter(c=>!onlyFilled||c.tel);
   if(!cs.length) return `<p class="muted">Nessun numero inserito. Aggiungili in <b>Cure → Contatti</b>.</p>`;
-  return cs.map(c=>`<div class="li"><div class="grow"><span class="small muted">${esc(c.ruolo)}</span><br><b>${esc(c.nome)}</b> <span class="tel">${esc(c.tel)}</span></div>${c.tel?`<button class="btn sm soft" data-copy="${esc(c.tel)}">Copia</button>`:""}</div>`).join("");
+  return cs.map(c=>`<div class="li"><div class="grow"><span class="small muted">${esc(c.ruolo)}</span><br><b>${esc(c.nome)}</b> <span class="tel">${esc(c.tel)}</span></div>${c.tel?`<div class="calls">${chiamaHTML(c.tel)}<button class="btn sm soft" data-copy="${esc(c.tel)}">Copia</button></div>`:""}</div>`).join("");
 }
 
 /* ---------- OGGI ---------- */
@@ -591,7 +600,7 @@ function renderGuide(){
 
   <section class="card"><h2>A chi rivolgersi</h2>
     <div class="li" style="align-items:flex-start"><div class="grow"><b>AIMaC · help-line</b><br><span class="small">Volontari con oncologo, psicologo e avvocato: malattia, effetti collaterali, diritti. Lun–ven 9–19.</span><br>
-      <span class="tel">06 42989570</span> · <span class="tel">340 8472343</span></div><button class="btn sm soft" data-copy="0642989570">Copia</button></div>
+      <span class="tel">06 42989570</span> · <span class="tel">340 8472343</span></div><div class="calls">${chiamaHTML("0642989570","Chiama fisso")}${chiamaHTML("3408472343","Chiama cellulare")}</div></div>
     <div class="li" style="align-items:flex-start"><div class="grow"><b>WALCE</b><br><span class="small">Associazione dedicata al tumore del polmone, dal 2006: informazione e supporto psicologico a pazienti e familiari, progetti su alimentazione e su come gestire gli effetti delle terapie sull'aspetto.</span><br><a href="https://www.walce.it" target="_blank" rel="noopener">walce.it</a></div></div>
     <div class="li" style="align-items:flex-start"><div class="grow"><b>Forum AIMaC</b><br><span class="small">Esperienze di altri pazienti e familiari.</span><br><a href="https://forumtumore.aimac.it/tumore-polmone.html" target="_blank" rel="noopener">forumtumore.aimac.it</a></div></div>
   </section>
