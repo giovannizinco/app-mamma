@@ -531,7 +531,36 @@ function renderCure(){
     <label class="f grow">Pasti e spuntini<input type="number" id="pPasti" min="1" max="10" value="${p.obPasti}"></label>
     <label class="f grow">Minuti di cammino<input type="number" id="pCam" min="0" max="120" value="${p.obCammino}"></label></div>
     <p class="small muted">Se l'oncologo o il nutrizionista ti danno obiettivi diversi, usa i loro.</p>
-    <p class="sync">${online?"Salvato online: chi ha accesso a questa pagina vede gli stessi dati.":"Salvato su questo dispositivo."}</p></section>`;
+    <p class="sync">${online?"Salvato online: chi ha accesso a questa pagina vede gli stessi dati.":"Salvato su questo dispositivo."}</p></section>
+
+  <section class="card"><h2>Backup dei dati</h2>
+    <p class="muted">I dati sono solo su questo telefono: se lo cambi, lo perdi o disinstalli l'app, spariscono. Ogni tanto copia il backup e mandalo a te stesso (per esempio su WhatsApp o per email).</p>
+    <p class="small muted">${S.ultimoBackup?"Ultimo backup copiato: "+fmtK(S.ultimoBackup):"Nessun backup copiato finora."}</p>
+    <div class="row"><button class="btn primary grow" id="bkCopia">Copia il backup</button><button class="btn grow" id="bkRipr">Ripristina</button></div>
+    <p class="small muted">Il backup contiene diario, farmaci e dati di salute: mandalo solo a te stesso o a persone di fiducia.</p></section>`;
+}
+
+/* ---------- backup ---------- */
+const BK="ANNA-BACKUP-1";
+function backupTesto(){const {ultimoBackup,...dati}=S;return BK+"\n"+JSON.stringify({creato:new Date().toISOString(),...dati})}
+function apriBackup(){
+  const txt=backupTesto();
+  const bg=openSheet(`<h2>Copia il backup</h2><p class="muted">Tocca "Copia", poi incolla il testo in un messaggio a te stesso. Per ripristinare servirà tutto il testo, dall'inizio alla fine.</p>
+    <textarea readonly style="min-height:140px;font-size:.8rem">${esc(txt)}</textarea>
+    <div class="row"><button class="btn primary grow" id="bkCp">Copia</button><button class="btn grow" data-close>Chiudi</button></div>`);
+  bg.querySelector("#bkCp").onclick=async()=>{await copy(txt);S.ultimoBackup=today();saveLocal();render()};
+}
+function apriRipristino(){
+  const bg=openSheet(`<h2>Ripristina un backup</h2><p class="muted">Incolla qui tutto il testo del backup. <b>I dati attuali di questo telefono verranno sostituiti.</b></p>
+    <textarea id="bkIn" style="min-height:140px;font-size:.8rem" placeholder="ANNA-BACKUP-1 …"></textarea><div id="bkErr"></div>
+    <div class="row"><button class="btn primary grow" id="bkDo">Ripristina</button><button class="btn grow" data-close>Annulla</button></div>`);
+  bg.querySelector("#bkDo").onclick=()=>{
+    const err=m=>{bg.querySelector("#bkErr").innerHTML=`<div class="alert">${m}</div>`};
+    let o;try{const t=bg.querySelector("#bkIn").value.trim();if(!t.startsWith(BK))throw 0;o=JSON.parse(t.slice(BK.length))}catch(e){err("Il testo non è un backup valido: controlla di averlo incollato tutto.");return}
+    if(typeof o!=="object"||!o.profilo||typeof o.giorni!=="object"){err("Il backup è incompleto.");return}
+    S={profilo:{...structuredClone(DEF_PROFILO),...o.profilo,prom:{...DEF_PROFILO.prom,...(o.profilo.prom||{})}},giorni:o.giorni||{},domande:Array.isArray(o.domande)?o.domande:[],ultimoBackup:S.ultimoBackup};
+    saveLocal();reschedule();bg.remove();toast("Dati ripristinati");render();
+  };
 }
 
 /* ---------- GUIDE ---------- */
@@ -791,6 +820,8 @@ function bind(){
       if(Number(String(g.temp).replace(",","."))>=38){tab="oggi"}render();scrollTo({top:0});return}
     if(t.dataset.promchk){const k2=t.dataset.promchk;S.profilo.prom[k2]=!S.profilo.prom[k2];saveProfilo();render();return}
     if(t.id==="provaN"){provaNotifica();return}
+    if(t.id==="bkCopia"){apriBackup();return}
+    if(t.id==="bkRipr"){apriRipristino();return}
     if(t.dataset.cf!=null){cucinaF=t.dataset.cf;render();return}
     if(t.dataset.ric){openRicetta(t.dataset.ric);return}
     if(t.id==="riep"){const txt=riepilogo();openSheet(`<h2>Riepilogo per la visita</h2><pre style="white-space:pre-wrap;font-family:var(--f-body);margin:0;background:var(--sunk);padding:14px;border-radius:12px;user-select:all">${esc(txt)}</pre><div class="row"><button class="btn primary grow" data-copy="${esc(txt)}">Copia il testo</button><button class="btn grow" data-close>Chiudi</button></div>`);return}
