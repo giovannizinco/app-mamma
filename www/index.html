@@ -329,6 +329,7 @@ function contattiHTML(onlyFilled){
 }
 
 /* ---------- OGGI ---------- */
+const isChemio=c=>!c.tipo||c.tipo==="Chemioterapia";
 function prossimoCiclo(){
   const t=today();const fut=S.profilo.cicli.filter(c=>c.data>=t).sort((a,b)=>a.data<b.data?-1:1);return fut[0];
 }
@@ -337,7 +338,8 @@ function renderOggi(){
   const k=today(), g=giorno(k), p=S.profilo, h=new Date().getHours();
   const saluto=h<12?"Buongiorno":h<18?"Buon pomeriggio":"Buonasera";
   const nc=prossimoCiclo();
-  const chip=nc?`<span class="chemo-chip">${giorniA(nc.data)===0?"Chemio oggi":giorniA(nc.data)===1?"Chemio domani":"Prossima chemio tra "+giorniA(nc.data)+" giorni"} · ${fmtK(nc.data)}</span>`:"";
+  const gg=nc?giorniA(nc.data):0, nome=nc&&isChemio(nc)?"Chemio":esc(nc?.tipo);
+  const chip=nc?`<span class="chemo-chip">${gg===0?nome+" oggi":gg===1?nome+" domani":(isChemio(nc)?"Prossima chemio":nome)+" tra "+gg+" giorni"} · ${fmtK(nc.data)}</span>`:"";
   const farm=p.farmaci.flatMap(f=>(f.orari||[""]).map(o=>({id:f.id+"@"+o,nome:f.nome,ora:o,nota:f.nota}))).sort((a,b)=>(a.ora||"99")<(b.ora||"99")?-1:1);
   const fatto=[...farm.map(f=>g.checks[f.id]),g.acqua>=p.obAcqua,g.pasti>=p.obPasti,g.respiro>=2,g.cammino>=p.obCammino,g.checks.bocca_m&&g.checks.bocca_s,!!g.sint.compilato].filter(Boolean).length;
   const tot=farm.length+6;
@@ -481,20 +483,20 @@ function storicoHTML(){
   if(!vals.some(v=>v!=null)) return `<section class="card"><h3>Andamento</h3><p class="muted">Dopo qualche giorno di diario qui vedrai come cambia la stanchezza.</p></section>`;
   const W=320,H=90,px=i=>8+i*(W-16)/13,py=v=>H-12-v*(H-24)/10;
   let path="",dots="";vals.forEach((v,i)=>{if(v==null)return;path+=(path?"L":"M")+px(i).toFixed(1)+" "+py(v).toFixed(1);dots+=`<circle cx="${px(i)}" cy="${py(v)}" r="3.5" fill="var(--accent)"/>`});
-  const cicli=ks.map((k,i)=>S.profilo.cicli.some(c=>c.data===k)?`<rect x="${px(i)-6}" y="2" width="12" height="${H-4}" rx="3" fill="var(--warm-soft)"/>`:"").join("");
+  const cicli=ks.map((k,i)=>S.profilo.cicli.some(c=>c.data===k&&isChemio(c))?`<rect x="${px(i)-6}" y="2" width="12" height="${H-4}" rx="3" fill="var(--warm-soft)"/>`:"").join("");
   return `<section class="card"><div class="row between"><h3>Stanchezza, ultimi 14 giorni</h3><span class="small muted">0–10</span></div>
    <svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Andamento della stanchezza">${cicli}
    <line x1="8" x2="${W-8}" y1="${py(5)}" y2="${py(5)}" stroke="var(--line)" stroke-dasharray="3 4"/>
    <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>${dots}</svg>
    <div class="ends"><span>${fmtK(ks[0])}</span><span>oggi</span></div>
-   ${S.profilo.cicli.length?`<p class="small muted">Le fasce arancioni sono i giorni di chemio.</p>`:""}</section>`;
+   ${S.profilo.cicli.some(isChemio)?`<p class="small muted">Le fasce arancioni sono i giorni di chemio.</p>`:""}</section>`;
 }
 function riepilogo(){
   const ks=ultimi(14).filter(k=>S.giorni[k]?.sint?.compilato||S.giorni[k]?.note||S.giorni[k]?.temp);
   if(!ks.length) return "Nessun giorno compilato negli ultimi 14 giorni.";
   return "Diario sintomi (0 = per niente, 10 = massimo)\n\n"+ks.map(k=>{const g=S.giorni[k];
     const s=SINT.filter(([id])=>g.sint[id]!=null).map(([id,l])=>l.toLowerCase()+" "+g.sint[id]).join(", ");
-    return "• "+fmtK(k)+(S.profilo.cicli.some(c=>c.data===k)?" (chemio)":"")+": "+[s,g.flag.length?"anche: "+g.flag.join(", ").toLowerCase():"",g.temp?"temperatura "+g.temp+" °C":"",g.peso?"peso "+g.peso+" kg":"",g.note?"note: "+g.note:""].filter(Boolean).join("; ");
+    return "• "+fmtK(k)+(S.profilo.cicli.some(c=>c.data===k&&isChemio(c))?" (chemio)":"")+": "+[s,g.flag.length?"anche: "+g.flag.join(", ").toLowerCase():"",g.temp?"temperatura "+g.temp+" °C":"",g.peso?"peso "+g.peso+" kg":"",g.note?"note: "+g.note:""].filter(Boolean).join("; ");
   }).join("\n")+(S.domande.filter(d=>!d.fatta).length?"\n\nDomande per l'oncologo:\n"+S.domande.filter(d=>!d.fatta).map(d=>"• "+d.testo).join("\n"):"");
 }
 
