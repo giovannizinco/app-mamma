@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#23716C">
+<meta name="theme-color" content="#173634" media="(prefers-color-scheme: dark)">
 <title>Forza Mamma❤️</title>
 <style>
 @font-face{font-family:"Atkinson Hyperlegible";font-weight:400;font-style:normal;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-400-normal.woff2) format("woff2")}
@@ -20,6 +21,8 @@ body{margin:0;-webkit-tap-highlight-color:transparent}
   --accent:#23716C; --accent-ink:#FFFFFF; --accent-soft:#D3E8E5;
   --warm:#B86A12; --warm-soft:#F6E6CF;
   --alarm:#B3261E; --alarm-soft:#F9DEDA; --ok:#2E7D4F;
+  --bar:#23716C; --bar-ink:#FFFFFF;
+  --rose:#A23B5B; --rose-soft:#F6DEE6; --sky:#3F5FA8; --sky-soft:#DFE6F6; --leaf:#2E7D4F; --leaf-soft:#DDEFE3;
   --f-display:"Literata", Georgia, "Times New Roman", serif;
   --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --r:14px;
@@ -27,17 +30,20 @@ body{margin:0;-webkit-tap-highlight-color:transparent}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0F1A1C; --surface:#172527; --sunk:#1F3033; --ink:#E4EEEC; --muted:#9DB2B0; --line:#2C4245;
   --accent:#5FBDB3; --accent-ink:#0B1A1A; --accent-soft:#1D3D3B;
-  --warm:#E7A85A; --warm-soft:#3A2C18; --alarm:#FF8A7E; --alarm-soft:#3D1D1A; --ok:#7FCB9A; color-scheme:dark}}
+  --warm:#E7A85A; --warm-soft:#3A2C18; --alarm:#FF8A7E; --alarm-soft:#3D1D1A; --ok:#7FCB9A;
+  --bar:#173634; --bar-ink:#E4EEEC; --rose:#F08DAE; --rose-soft:#3B1E28; --sky:#9DB4F0; --sky-soft:#1E2840; --leaf:#7FCB9A; --leaf-soft:#1A3324; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F1A1C; --surface:#172527; --sunk:#1F3033; --ink:#E4EEEC; --muted:#9DB2B0; --line:#2C4245;
   --accent:#5FBDB3; --accent-ink:#0B1A1A; --accent-soft:#1D3D3B;
-  --warm:#E7A85A; --warm-soft:#3A2C18; --alarm:#FF8A7E; --alarm-soft:#3D1D1A; --ok:#7FCB9A; color-scheme:dark}
+  --warm:#E7A85A; --warm-soft:#3A2C18; --alarm:#FF8A7E; --alarm-soft:#3D1D1A; --ok:#7FCB9A;
+  --bar:#173634; --bar-ink:#E4EEEC; --rose:#F08DAE; --rose-soft:#3B1E28; --sky:#9DB4F0; --sky-soft:#1E2840; --leaf:#7FCB9A; --leaf-soft:#1A3324; color-scheme:dark}
 
 *{box-sizing:border-box}
 html,body{background:var(--bg)}
 body{color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.5;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  --gl:max(16px,env(safe-area-inset-left,0px));--gr:max(16px,env(safe-area-inset-right,0px));
+  padding-left:var(--gl);padding-right:var(--gr);
+  padding-bottom:calc(32px + env(safe-area-inset-bottom,0px))}
 .wrap{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:18px;padding-block:12px 24px}
 h1,h2,h3{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0;line-height:1.2}
 h1{font-size:1.75rem} h2{font-size:1.3rem} h3{font-size:1.08rem}
@@ -49,12 +55,32 @@ a{color:var(--accent)}
 button{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
-/* barra allarme */
-.sos{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;margin-top:8px;display:flex;align-items:center;gap:10px;
-  background:var(--alarm-soft);color:var(--alarm);border:1.5px solid var(--alarm);border-radius:var(--r);padding:10px 14px;
-  font-weight:700;cursor:pointer;width:100%;text-align:left;min-height:52px}
+/* barra in alto: menu, titolo della sezione, pulsante urgenze */
+.appbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:25;margin:0 calc(-1 * var(--gr)) 0 calc(-1 * var(--gl));
+  padding:0 var(--gr) 0 var(--gl);background:var(--bar);color:var(--bar-ink);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.appbar .in{max-width:620px;margin:0 auto;min-height:60px;display:flex;align-items:center;gap:6px}
+.appbar .title{flex:1;min-width:0;font-family:var(--f-display);font-weight:600;font-size:1.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{width:48px;height:48px;margin-left:-8px;border:0;border-radius:12px;background:transparent;color:inherit;display:grid;place-items:center;cursor:pointer;flex:none}
+.sos{display:flex;align-items:center;gap:6px;background:var(--alarm-soft);color:var(--alarm);border:1.5px solid var(--alarm);border-radius:999px;
+  padding:0 14px;min-height:44px;font-weight:700;font-size:.95rem;cursor:pointer;flex:none}
 .sos svg{flex:none}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:26;background:var(--bar)}
+
+/* menu laterale */
+.drawer-bg{position:fixed;inset:0;z-index:45;background:rgba(10,20,22,.5);opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer-bg.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;bottom:0;left:0;z-index:46;width:min(84vw,320px);background:var(--surface);border-radius:0 20px 20px 0;
+  display:flex;flex-direction:column;overflow-y:auto;transform:translateX(-102%);visibility:hidden;transition:transform .25s ease,visibility 0s .25s;
+  padding:calc(24px + env(safe-area-inset-top,0px)) 12px calc(16px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.drawer.open{transform:none;visibility:visible;transition:transform .25s ease}
+.dr-head{display:flex;align-items:center;gap:14px;padding:0 8px 20px;border-bottom:1px solid var(--line);margin-bottom:10px}
+.dr-logo{width:56px;height:56px;border-radius:16px;border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.dr-head b{display:block;font-family:var(--f-display);font-size:1.25rem;line-height:1.2}
+.dr-item{display:flex;align-items:center;gap:18px;width:100%;min-height:56px;padding:0 14px;border:0;border-radius:12px;background:transparent;text-align:left;font-size:1.05rem;cursor:pointer}
+.dr-item svg{width:24px;height:24px;flex:none;color:var(--accent)}
+.dr-item.on{background:var(--accent-soft);font-weight:700}
+.dr-item.alarm,.dr-item.alarm svg{color:var(--alarm)}
+.dr-foot{margin-top:auto;padding-top:10px;border-top:1px solid var(--line)}
 
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px}
 .plain{display:flex;flex-direction:column;gap:12px}
@@ -142,18 +168,32 @@ details.g .body{padding:0 18px 18px;display:flex;flex-direction:column;gap:10px}
 details.g ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
 .src{font-size:.85rem;color:var(--muted)}
 
-/* nav */
-nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);
-  padding:6px max(8px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-right,0px))}
-nav.tabs .in{max-width:620px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
-nav.tabs button{border:0;background:transparent;min-height:64px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer}
-nav.tabs button.on{color:var(--accent);background:var(--accent-soft)}
-nav.tabs svg{width:26px;height:26px}
+/* calendario a giorni */
+.cal-m{font-family:var(--f-display);font-weight:600;font-size:1.05rem;padding:14px 0 6px}
+.cal-m::first-letter{text-transform:uppercase}
+.cal-day{display:grid;grid-template-columns:56px 1fr;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.cal-date{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;padding:6px 0;line-height:1.15;color:var(--accent)}
+.cal-date span{font-size:.8rem;font-weight:700;color:var(--muted)}
+.cal-date b{font-size:1.5rem;font-variant-numeric:tabular-nums}
+.cal-day.today .cal-date{background:var(--accent);color:var(--accent-ink)}
+.cal-day.today .cal-date span{color:inherit}
+.cal-evs{display:flex;flex-direction:column;gap:8px;min-width:0}
+.cal-ev{display:flex;align-items:center;gap:4px;min-height:60px;padding:8px 2px 8px 14px;border-radius:12px;background:var(--ev-bg);border-left:5px solid var(--ev)}
+.cal-ev .grow{overflow-wrap:anywhere}
+.cal-ev b{display:block}
+.cal-empty{padding:12px 14px;border:1.5px dashed var(--line);border-radius:12px;color:var(--muted)}
+.cal.past{opacity:.65}
+.ev-chemio{--ev:var(--warm);--ev-bg:var(--warm-soft)}
+.ev-sangue{--ev:var(--rose);--ev-bg:var(--rose-soft)}
+.ev-visita{--ev:var(--accent);--ev-bg:var(--accent-soft)}
+.ev-tac{--ev:var(--sky);--ev-bg:var(--sky-soft)}
+.ev-fisio{--ev:var(--leaf);--ev-bg:var(--leaf-soft)}
+.ev-altro{--ev:var(--muted);--ev-bg:var(--sunk)}
 
 .sheet-bg{position:fixed;inset:0;background:rgba(10,20,22,.5);z-index:40;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--surface);color:var(--ink);width:100%;max-width:620px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;
   padding:20px max(18px,env(safe-area-inset-left,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;z-index:50;font-size:.95rem}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(28px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;z-index:50;font-size:.95rem}
 .sync{font-size:.8rem;color:var(--muted)}
 /* cucina */
 .rc{display:flex;flex-direction:column;gap:4px;padding:14px;border-radius:12px;background:var(--sunk);border:0;width:100%;text-align:left;cursor:pointer;min-height:64px}
@@ -170,36 +210,54 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;text
 a.btn.primary{color:var(--accent-ink)}
 .btn.alarm{background:var(--alarm);border-color:var(--alarm);color:#fff}
 .calls{display:flex;flex-direction:column;gap:6px;flex:none}
-@media (prefers-reduced-motion: reduce){.orb{transition:none}}
+@media (prefers-reduced-motion: reduce){.orb,.drawer,.drawer-bg{transition:none}}
+#impost{scroll-margin-top:84px}
 </style>
 </head>
 <body>
 
 
+<header class="appbar">
+  <div class="in">
+    <button class="icon-btn" id="menuBtn" type="button" aria-label="Apri il menu" aria-expanded="false" aria-controls="drawer">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <span class="title" id="barTitle">Oggi</span>
+    <button class="sos" id="sosBtn" type="button" aria-haspopup="dialog" aria-label="Quando chiamare subito il medico">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 10v4.5M12 17.5v.01"/></svg><span>Urgenze</span>
+    </button>
+  </div>
+</header>
+
 <div class="wrap" id="app">
-  <button class="sos" id="sosBtn" type="button" aria-haspopup="dialog">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 10v4.5M12 17.5v.01"/></svg>
-    <span>Quando chiamare subito il medico</span>
-  </button>
   <main id="view"></main>
 </div>
 
-<nav class="tabs" aria-label="Sezioni">
-  <div class="in">
-    <button data-tab="oggi" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Oggi</button>
-    <button data-tab="respira"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7"/></svg>Respiro</button>
-    <button data-tab="diario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>Diario</button>
-    <button data-tab="cure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Cure</button>
-    <button data-tab="cucina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 11h16a8 8 0 0 1-16 0Z"/><path d="M9 7c0-1.5 1-1.5 1-3M14 7c0-1.5 1-1.5 1-3M2.5 11h19"/></svg>Cucina</button>
-    <button data-tab="guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/></svg>Guide</button>
+<div class="drawer-bg" id="drawerBg"></div>
+<aside class="drawer" id="drawer" aria-label="Menu">
+  <div class="dr-head">
+    <span class="dr-logo"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.1 4.3 2.4h2c.7-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21Z"/></svg></span>
+    <div class="grow"><b>Forza Mamma</b><span class="small muted" id="drNome"></span></div>
   </div>
-</nav>
+  <nav aria-label="Sezioni">
+    <button class="dr-item" data-tab="oggi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Oggi</button>
+    <button class="dr-item" data-tab="respira"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7"/></svg>Respiro e movimento</button>
+    <button class="dr-item" data-tab="diario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>Diario</button>
+    <button class="dr-item" data-tab="cure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Cure e calendario</button>
+    <button class="dr-item" data-tab="cucina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 11h16a8 8 0 0 1-16 0Z"/><path d="M9 7c0-1.5 1-1.5 1-3M14 7c0-1.5 1-1.5 1-3M2.5 11h19"/></svg>Cucina</button>
+    <button class="dr-item" data-tab="guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/></svg>Guide pratiche</button>
+  </nav>
+  <div class="dr-foot">
+    <button class="dr-item" id="drImpost"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>Impostazioni e backup</button>
+    <button class="dr-item alarm" id="drSos"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 10v4.5M12 17.5v.01"/></svg>Quando chiamare il medico</button>
+  </div>
+</aside>
 
 <script>
 (()=>{
 /* ---------- dati e salvataggio ---------- */
 const LS="respiro-v1";
-const DEF_PROFILO={nome:"",cicli:[],farmaci:[],contatti:[
+const DEF_PROFILO={nome:"Anna Maria",cicli:[],farmaci:[],contatti:[
   {ruolo:"Centro oncologico / day hospital",nome:"",tel:""},
   {ruolo:"Oncologo di riferimento",nome:"",tel:""},
   {ruolo:"Medico di famiglia",nome:"",tel:""},
@@ -209,6 +267,7 @@ const DEF_PROFILO={nome:"",cicli:[],farmaci:[],contatti:[
 let S={profilo:structuredClone(DEF_PROFILO),giorni:{},domande:[]};
 let db=null, online=false;
 try{const raw=localStorage.getItem(LS); if(raw){const o=JSON.parse(raw); S={...S,...o,profilo:{...DEF_PROFILO,...(o.profilo||{}),prom:{...DEF_PROFILO.prom,...(o.profilo?.prom||{})}}}}}catch(e){}
+if(!S.profilo.nome) S.profilo.nome=DEF_PROFILO.nome;
 const saveLocal=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}};
 
 const pend={}, busy={};
@@ -294,7 +353,18 @@ function promHTML(){
 
 /* ---------- navigazione ---------- */
 let tab="oggi";
-document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;stopBreath();render();window.scrollTo({top:0})});
+const TITOLI={oggi:"Oggi",respira:"Respiro",diario:"Diario",cure:"Cure",cucina:"Cucina",guide:"Guide"};
+function apriMenu(on){
+  $("#drawer").classList.toggle("open",on);$("#drawerBg").classList.toggle("open",on);
+  $("#menuBtn").setAttribute("aria-expanded",on);document.body.style.overflow=on?"hidden":"";
+  if(on)$("#drawer .dr-item.on, #drawer .dr-item")?.focus();else $("#menuBtn").focus();
+}
+$("#menuBtn").onclick=()=>apriMenu(true);
+$("#drawerBg").onclick=()=>apriMenu(false);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#drawer").classList.contains("open"))apriMenu(false)});
+document.querySelectorAll("#drawer [data-tab]").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;stopBreath();apriMenu(false);render();window.scrollTo({top:0})});
+$("#drImpost").onclick=()=>{tab="cure";stopBreath();apriMenu(false);render();$("#impost").scrollIntoView()};
+$("#drSos").onclick=()=>{apriMenu(false);$("#sosBtn").click()};
 const ALLARMI=[
  ["Febbre a 38 °C o più, oppure brividi","Durante la chemio le difese possono essere basse: chiama subito il centro, anche di notte o nel fine settimana."],
  ["Fiato corto nuovo o che peggiora all'improvviso",""],
@@ -501,17 +571,43 @@ function riepilogo(){
 }
 
 /* ---------- CURE ---------- */
+const TIPI=["Chemioterapia","Esami del sangue","Visita oncologica","TAC / esami","Fisioterapia","Altro"];
+const EV={"Chemioterapia":"chemio","Esami del sangue":"sangue","Visita oncologica":"visita","TAC / esami":"tac","Fisioterapia":"fisio"};
+const MESI=["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"];
+// Agenda a giorni: data a sinistra, appuntamenti a destra, un titolo a ogni cambio di mese.
+function agendaHTML(list,conOggi){
+  const t=today(),giorni=new Map();
+  if(conOggi) giorni.set(t,[]);
+  list.forEach(c=>{if(!giorni.has(c.data))giorni.set(c.data,[]);giorni.get(c.data).push(c)});
+  let mese="",out="";
+  for(const [k,evs] of giorni){
+    const d=parseK(k),m=d.getFullYear()+"-"+d.getMonth();
+    if(m!==mese){mese=m;out+=`<div class="cal-m">${MESI[d.getMonth()]}${d.getFullYear()!==new Date().getFullYear()?" "+d.getFullYear():""}</div>`}
+    out+=`<div class="cal-day${k===t?" today":""}"><div class="cal-date"${k===t?' aria-label="oggi"':""}><span>${GG[d.getDay()]}</span><b>${d.getDate()}</b></div><div class="cal-evs">${
+      evs.length?evs.map(c=>{const tipo=c.tipo||"Chemioterapia";return `<div class="cal-ev ev-${EV[tipo]||"altro"}"><div class="grow"><b>${esc(tipo)}</b>${c.nota?`<span class="small muted">${esc(c.nota)}</span>`:""}</div><button class="x" data-delc="${c.id}" aria-label="Elimina ${esc(tipo)} del ${fmtK(k)}">×</button></div>`}).join("")
+      :`<div class="cal-empty">Oggi niente in programma</div>`}</div></div>`;
+  }
+  return out;
+}
+function apriNuovaData(){
+  const bg=openSheet(`<h2>Nuova data</h2><form class="plain" id="cForm">
+    <div class="row"><label class="f grow">Data<input type="date" id="cData" required value="${today()}"></label>
+    <label class="f grow">Cosa<select id="cTipo">${TIPI.map(x=>`<option>${x}</option>`).join("")}</select></label></div>
+    <label class="f">Nota<input type="text" id="cNota" placeholder="es. 2° ciclo, a digiuno, portare referti"></label>
+    <div class="row"><button class="btn primary grow" type="submit">Aggiungi</button><button class="btn grow" type="button" data-close>Annulla</button></div></form>`);
+  bg.querySelector("form").onsubmit=e=>{e.preventDefault();
+    S.profilo.cicli.push({id:uid(),data:bg.querySelector("#cData").value,tipo:bg.querySelector("#cTipo").value,nota:bg.querySelector("#cNota").value.trim()});
+    saveProfilo();bg.remove();toast("Aggiunto");render()};
+}
 function renderCure(){
   const p=S.profilo,t=today();
   const cicli=[...p.cicli].sort((a,b)=>a.data<b.data?-1:1);
   return `
   <section class="hero"><span class="eyebrow">Cure e organizzazione</span><h1>Il piano di cura</h1></section>
-  <section class="card"><h2>Calendario chemio ed esami</h2>
-    <div class="list">${cicli.length?cicli.map(c=>`<div class="li" style="${c.data<t?"opacity:.55":""}"><span class="date-badge">${fmtK(c.data)}</span><div class="grow">${esc(c.tipo)}${c.nota?`<br><span class="small muted">${esc(c.nota)}</span>`:""}</div><button class="x" data-delc="${c.id}" aria-label="Elimina">×</button></div>`).join(""):`<p class="muted">Aggiungi le date dei cicli e degli esami del sangue che si fanno prima di ogni ciclo.</p>`}</div>
-    <form id="cForm" class="plain"><div class="row"><label class="f grow">Data<input type="date" id="cData" required></label>
-      <label class="f grow">Cosa<select id="cTipo"><option>Chemioterapia</option><option>Esami del sangue</option><option>Visita oncologica</option><option>TAC / esami</option><option>Fisioterapia</option><option>Altro</option></select></label></div>
-      <label class="f">Nota<input type="text" id="cNota" placeholder="es. 2° ciclo, a digiuno, portare referti"></label>
-      <button class="btn soft" type="submit">Aggiungi data</button></form></section>
+  <section class="card"><div class="row between"><h2>Calendario</h2><button class="btn sm primary" id="cAdd">+ Aggiungi</button></div>
+    ${cicli.length?"":`<p class="muted">Aggiungi le date dei cicli e degli esami del sangue che si fanno prima di ogni ciclo.</p>`}
+    <div class="cal">${agendaHTML(cicli.filter(c=>c.data>=t),true)}</div>
+    ${cicli.some(c=>c.data<t)?`<details class="g" style="border:0;background:var(--sunk)"><summary>Date passate (${cicli.filter(c=>c.data<t).length})</summary><div class="body"><div class="cal past">${agendaHTML(cicli.filter(c=>c.data<t).reverse(),false)}</div></div></details>`:""}</section>
 
   <section class="card"><h2>Farmaci</h2><p class="small muted">Copia nome, dose e orari esattamente dalla prescrizione. Per dubbi chiedi al medico o al farmacista.</p>
     <div class="list">${p.farmaci.length?p.farmaci.map(f=>`<div class="li"><div class="grow"><b>${esc(f.nome)}</b><br><span class="small muted">${esc((f.orari||[]).filter(Boolean).join(" · ")||"senza orario")}${f.nota?" — "+esc(f.nota):""}</span></div><button class="x" data-delf="${f.id}" aria-label="Elimina">×</button></div>`).join(""):`<p class="muted">Nessun farmaco inserito.</p>`}</div>
@@ -536,8 +632,8 @@ function renderCure(){
 
   ${promHTML()}
 
-  <section class="card"><h2>Impostazioni</h2>
-    <label class="f">Nome per il saluto<input type="text" id="pNome" value="${esc(p.nome)}" placeholder="facoltativo"></label>
+  <section class="card" id="impost"><h2>Impostazioni</h2>
+    <label class="f">Nome per il saluto<input type="text" id="pNome" value="${esc(p.nome)}" placeholder="Anna Maria"></label>
     <div class="row"><label class="f grow">Bicchieri d'acqua<input type="number" id="pAcqua" min="1" max="15" value="${p.obAcqua}"></label>
     <label class="f grow">Pasti e spuntini<input type="number" id="pPasti" min="1" max="10" value="${p.obPasti}"></label>
     <label class="f grow">Minuti di cammino<input type="number" id="pCam" min="0" max="120" value="${p.obCammino}"></label></div>
@@ -801,7 +897,8 @@ function openRicetta(id){
 
 /* ---------- render ed eventi ---------- */
 function render(){
-  document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab));
+  document.querySelectorAll("#drawer [data-tab]").forEach(b=>{b.classList.toggle("on",b.dataset.tab===tab);b.dataset.tab===tab?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current")});
+  $("#barTitle").textContent=TITOLI[tab];$("#drNome").textContent=S.profilo.nome||"Il diario delle cure";
   $("#view").innerHTML=`<div class="wrap" style="padding:0">${({oggi:renderOggi,respira:renderRespira,diario:renderDiario,cure:renderCure,cucina:renderCucina,guide:renderGuide})[tab]()}</div>`;
   bind();
 }
@@ -832,6 +929,7 @@ function bind(){
     if(t.dataset.promchk){const k2=t.dataset.promchk;S.profilo.prom[k2]=!S.profilo.prom[k2];saveProfilo();render();return}
     if(t.id==="provaN"){provaNotifica();return}
     if(t.id==="bkCopia"){apriBackup();return}
+    if(t.id==="cAdd"){apriNuovaData();return}
     if(t.id==="bkRipr"){apriRipristino();return}
     if(t.dataset.cf!=null){cucinaF=t.dataset.cf;render();return}
     if(t.dataset.ric){openRicetta(t.dataset.ric);return}
@@ -852,7 +950,6 @@ function bind(){
   V.onsubmit=e=>{
     e.preventDefault();const f=e.target;
     if(f.id==="spForm"){S.profilo.esSpalla.push({id:uid(),nome:$("#spNome").value.trim(),dettagli:$("#spDet").value.trim()});saveProfilo()}
-    if(f.id==="cForm"){S.profilo.cicli.push({id:uid(),data:$("#cData").value,tipo:$("#cTipo").value,nota:$("#cNota").value.trim()});saveProfilo()}
     if(f.id==="fForm"){S.profilo.farmaci.push({id:uid(),nome:$("#fNome").value.trim(),orari:[$("#fO1").value,$("#fO2").value,$("#fO3").value].filter(Boolean),nota:$("#fNota").value.trim()});saveProfilo()}
     if(f.id==="dForm"){S.domande.push({id:uid(),testo:$("#dTesto").value.trim(),fatta:false});saveDomande()}
     toast("Aggiunto");render();
